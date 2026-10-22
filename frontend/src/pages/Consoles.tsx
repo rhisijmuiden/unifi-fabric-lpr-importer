@@ -159,7 +159,7 @@ function AccessSettings() {
           <div className="text-sm font-semibold">{t("consoles.settings.notation")}</div>
           <div className="mt-0.5 text-sm text-muted">{t("consoles.settings.notationHint")}</div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {(["official", "compact"] as const).map((n) => (
+            {(["compact", "official"] as const).map((n) => (
               <button
                 key={n}
                 onClick={() => save.mutate({ plate_notation: n })}

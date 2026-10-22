@@ -188,7 +188,7 @@ class ImportMappingIn(BaseModel):
 
 
 class AccessSettingsIn(BaseModel):
-    plate_notation: str = Field(default="official", pattern="^(official|compact)$")
+    plate_notation: str = Field(default="compact", pattern="^(official|compact)$")
     delete_vehicle_users: bool = True
 
 
