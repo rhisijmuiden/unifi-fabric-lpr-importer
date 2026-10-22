@@ -1,0 +1,25 @@
+[Unit]
+Description=UniFi Fabric License Plate Importer
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=lprimporter
+Group=lprimporter
+WorkingDirectory=/opt/lpr-importer/backend
+EnvironmentFile=/etc/lpr-importer/lpr-importer.env
+# Port 8080, HTTPS when a certificate is configured; one worker (state in memory).
+ExecStart=/opt/lpr-importer/scripts/serve.sh
+Restart=on-failure
+RestartSec=3
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+ReadWritePaths=/opt/lpr-importer /var/lib/lpr-importer
+
+[Install]
+WantedBy=multi-user.target

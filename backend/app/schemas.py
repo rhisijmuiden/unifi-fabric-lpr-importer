@@ -1,0 +1,398 @@
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    display_name: str
+    email: str
+    role: str
+    auth_source: str
+    language: str
+    is_active: bool
+    created_at: datetime
+    last_login_at: datetime | None
+
+
+class LoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class UserCreate(BaseModel):
+    username: str = Field(min_length=1, max_length=255)
+    display_name: str = ""
+    email: str = ""
+    role: str = Field(default="viewer", pattern="^(admin|operator|viewer)$")
+    password: str = Field(min_length=10)
+    language: str = Field(default="en", pattern="^(en|nl)$")
+
+
+class UserUpdate(BaseModel):
+    display_name: str | None = None
+    email: str | None = None
+    role: str | None = Field(default=None, pattern="^(admin|operator|viewer)$")
+    is_active: bool | None = None
+    password: str | None = Field(default=None, min_length=10)
+    language: str | None = Field(default=None, pattern="^(en|nl)$")
+
+
+class LanguageIn(BaseModel):
+    language: str = Field(pattern="^(en|nl)$")
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=10)
+
+
+class SsoSettingsIn(BaseModel):
+    enabled: bool = False
+    tenant_id: str = ""
+    client_id: str = ""
+    client_secret: str | None = None
+    admin_group_id: str = ""
+    operator_group_id: str = ""
+    viewer_group_id: str = ""
+    allow_local_login: bool = True
+
+
+class SmtpSettingsIn(BaseModel):
+    host: str = ""
+    port: int = Field(default=587, ge=1, le=65535)
+    security: str = Field(default="starttls", pattern="^(none|starttls|ssl)$")
+    auth_method: str = Field(default="password", pattern="^(none|password|oauth2_m365)$")
+    username: str = ""
+    password: str | None = None
+    oauth_tenant_id: str = ""
+    oauth_client_id: str = ""
+    oauth_client_secret: str | None = None
+    from_address: str = ""
+    from_name: str = ""
+    verify_tls: bool = True
+
+
+class TestMailIn(BaseModel):
+    to: str = Field(min_length=3)
+
+
+class UpdateIn(BaseModel):
+    channel: str = Field(pattern="^(main|test)$")
+
+
+class AuditOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    actor_type: str
+    actor: str
+    action: str
+    target: str
+    details: dict
+    ip_address: str
+    success: bool
+    message: str
+
+
+class ConsoleIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    location: str = Field(default="", max_length=100)
+    host: str = Field(min_length=1, max_length=255)
+    port: int = Field(default=12445, ge=1, le=65535)
+    # None keeps the stored token on update.
+    api_token: str | None = None
+    verify_tls: bool = False
+    is_active: bool = True
+    sort_order: int = 0
+
+
+class ConsoleTestIn(BaseModel):
+    host: str = Field(min_length=1, max_length=255)
+    port: int = Field(default=12445, ge=1, le=65535)
+    api_token: str | None = None
+    verify_tls: bool = False
+    # Use the stored token of this console when no token is given.
+    console_id: int | None = None
+
+
+class ConsoleIds(BaseModel):
+    console_ids: list[int] | None = None
+
+
+class VehicleIn(BaseModel):
+    plate: str = Field(min_length=2, max_length=32)
+    department: str = Field(min_length=1, max_length=100)
+    location: str = Field(default="", max_length=100)
+    group_name: str = Field(default="", max_length=200)
+    description: str = Field(default="", max_length=255)
+
+
+class VehicleUpdate(BaseModel):
+    department: str | None = Field(default=None, min_length=1, max_length=100)
+    location: str | None = Field(default=None, max_length=100)
+    group_name: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class VehicleBulk(BaseModel):
+    vehicle_ids: list[int] = Field(min_length=1)
+    console_ids: list[int] | None = None
+
+
+class VehicleRemove(VehicleBulk):
+    # Also delete the vehicles from this application after removing them from the consoles.
+    delete_vehicles: bool = False
+
+
+class VehicleBulkEdit(BaseModel):
+    vehicle_ids: list[int] = Field(min_length=1)
+    department: str | None = Field(default=None, min_length=1, max_length=100)
+    location: str | None = Field(default=None, max_length=100)
+    group_name: str | None = Field(default=None, max_length=200)
+
+
+class AdoptItem(BaseModel):
+    plate: str
+    department: str = Field(min_length=1, max_length=100)
+    location: str = ""
+    group_name: str = ""
+    description: str = ""
+
+
+class AdoptIn(BaseModel):
+    items: list[AdoptItem] = Field(min_length=1)
+
+
+class ImportRow(BaseModel):
+    plate: str = ""
+    department: str = ""
+    location: str = ""
+    group_name: str = ""
+    description: str = ""
+
+
+class ImportIn(BaseModel):
+    rows: list[ImportRow] = Field(min_length=1, max_length=20000)
+    console_ids: list[int] = []
+    mode: str = Field(default="upsert", pattern="^(upsert|full)$")
+
+
+class ImportMappingIn(BaseModel):
+    mapping: dict[str, str] = {}
+    defaults: dict[str, str] = {}
+
+
+class AccessSettingsIn(BaseModel):
+    plate_notation: str = Field(default="compact", pattern="^(official|compact)$")
+    delete_vehicle_users: bool = True
+    scan_schedule: "BackupSchedule | None" = None  # None keeps the current schedule
+
+
+class NotificationSettingsIn(BaseModel):
+    recipients: str = Field(default="", max_length=1000)
+    import_report: str = Field(default="failure", pattern="^(failure|always|never)$")
+    sync_failure: bool = True
+    update_available: bool = True
+
+
+class ApiKeyIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    allow_delete: bool = False
+    allowed_ips: list[str] = Field(default=[], max_length=50)
+
+
+class ApiKeyUpdate(BaseModel):
+    allow_delete: bool | None = None
+    is_active: bool | None = None
+    allowed_ips: list[str] | None = Field(default=None, max_length=50)
+
+
+class ApiKeyOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    prefix: str
+    allow_delete: bool
+    allowed_ips: list[str]
+    is_active: bool
+    created_by: str
+    created_at: datetime
+    last_used_at: datetime | None
+
+
+class ApiVehicleIn(BaseModel):
+    plate: str = Field(default="", description="Required. License plate in any notation, e.g. `12-BDF-3` or `12bdf3`.", examples=["12-BDF-3"])
+    department: str = Field(default="", description="Required. Department; becomes the first name of the UniFi Access user.", examples=["Netwerktransport"])
+    location: str = Field(default="", description="Location (standplaats).", examples=["Wognum"])
+    group_name: str = Field(default="", description="UniFi Access user group. Default: department + location.")
+    description: str = Field(default="", description="Free text, e.g. make and type. Cut off after 255 characters.", examples=["DAF XF"])
+
+
+class ApiVehiclesIn(BaseModel):
+    """Vehicles pushed by an external system such as Lobster."""
+
+    vehicles: list[ApiVehicleIn] = Field(min_length=1, max_length=20000)
+    mode: str = Field(
+        default="upsert",
+        pattern="^(upsert|full)$",
+        description="`upsert` adds and updates only. `full` also removes vehicles of the same departments that are missing from the list.",
+    )
+    consoles: list[int | str] | None = Field(default=None, description="Console ids or names to register on. Omitted = all active consoles, `[]` = store in the app only.")
+    dry_run: bool = Field(default=False, description="Return what would change without changing anything.")
+
+
+class ApiJobAccepted(BaseModel):
+    job_id: int
+    status: str = Field(examples=["queued"])
+    status_url: str = Field(examples=["/api/v1/jobs/42"])
+    replayed: bool = Field(default=False, description="True when an earlier request with the same Idempotency-Key started this job.")
+
+
+class ApiVehicleOut(BaseModel):
+    plate: str = Field(examples=["12-BDF-3"])
+    department: str
+    location: str
+    group: str
+    description: str
+    source: str = Field(description="Where the vehicle came from: api, csv, manual or console.")
+    consoles: list[str] = Field(description="Names of the consoles the plate is present on.")
+    updated_at: datetime | None
+
+
+class ApiConsoleOut(BaseModel):
+    id: int
+    name: str
+    location: str
+
+
+class ApiStatusOut(BaseModel):
+    status: str = Field(examples=["ok"])
+    version: str
+    key: str = Field(description="Name of the API key used.")
+    allow_delete: bool
+    consoles: int = Field(description="Number of active consoles.")
+
+
+class ApiJobLogEntry(BaseModel):
+    at: str
+    ok: bool
+    message: str
+
+
+class ApiJobOut(BaseModel):
+    id: int
+    kind: str
+    actor: str = Field(description="Name of the API key that started the job.")
+    status: str = Field(description="queued, running, done or failed.")
+    total: int
+    processed: int
+    succeeded: int
+    failed: int
+    result: dict | None
+    created_at: str | None
+    finished_at: str | None
+    log: list[ApiJobLogEntry] = []
+
+
+class BackupTargetIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    protocol: str = Field(pattern="^(ftp|ftps|scp)$")
+    host: str = Field(min_length=1, max_length=255)
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str = Field(default="", max_length=255)
+    # None keeps the stored password on update.
+    password: str | None = None
+    auth_method: str = Field(default="password", pattern="^(password|key)$")
+    # None keeps the pinned SSH host key; "" forgets it (pinned again on the next connection).
+    host_key: str | None = None
+    remote_path: str = Field(default="lpr-importer", max_length=500)
+    ftps_implicit: bool = False
+    verify_tls: bool = True
+    passive: bool = True
+    is_enabled: bool = True
+
+
+class BackupTargetTestIn(BackupTargetIn):
+    name: str = ""
+    # Use the stored password and pinned host key of this target when none is given.
+    target_id: int | None = None
+
+
+class BackupSchedule(BaseModel):
+    enabled: bool = False
+    frequency: str = Field(default="daily", pattern="^(hourly|daily|weekly|monthly)$")
+    time: str = Field(default="02:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    weekday: int = Field(default=6, ge=0, le=6)  # 0 = Monday
+    monthday: int = Field(default=1, ge=1, le=28)
+
+
+class BackupSettingsIn(BaseModel):
+    # None keeps the current passphrase.
+    passphrase: str | None = Field(default=None, min_length=12, max_length=200)
+    keep_full: int = Field(default=4, ge=1, le=100)
+    schedule_full: BackupSchedule
+    schedule_incremental: BackupSchedule
+    notify_email: str = Field(default="", max_length=255)
+    notify_on: str = Field(default="failure", pattern="^(failure|always|never)$")
+
+
+class BackupRunIn(BaseModel):
+    kind: str = Field(pattern="^(full|incremental)$")
+    target_ids: list[int] | None = None
+
+
+class RestoreIn(BaseModel):
+    target_id: int
+    name: str = Field(min_length=1, max_length=100)
+    # The passphrase the backup was made with; empty = the current one.
+    passphrase: str | None = None
+    confirm: bool = False
+
+
+class ImportScheduleIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    is_enabled: bool = True
+    protocol: str = Field(pattern="^(url|scp|ftps|ftp)$")
+    url: str = Field(default="", max_length=1000)
+    host: str = Field(default="", max_length=255)
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str = Field(default="", max_length=255)
+    # None keeps the stored password on update.
+    password: str | None = None
+    auth_method: str = Field(default="password", pattern="^(password|key)$")
+    # None keeps the pinned SSH host key; "" forgets it.
+    host_key: str | None = None
+    remote_path: str = Field(default="", max_length=500)
+    filename: str = Field(default="", max_length=255)
+    ftps_implicit: bool = False
+    verify_tls: bool = True
+    passive: bool = True
+    mapping: dict[str, str] = {}
+    defaults: dict[str, str] = {}
+    filter_locations: list[str] = Field(default=[], max_length=100)
+    filter_departments: list[str] = Field(default=[], max_length=100)
+    console_ids: list[int] | None = None
+    mode: str = Field(default="upsert", pattern="^(upsert|full)$")
+    max_remove: int = Field(default=25, ge=0, le=100000)
+    skip_unchanged: bool = True
+    schedule: BackupSchedule = BackupSchedule(enabled=True, frequency="daily", time="06:00")
+
+
+class ImportScheduleTestIn(ImportScheduleIn):
+    name: str = ""
+    # Use the stored password and pinned host key of this schedule when none is given.
+    schedule_id: int | None = None
+
+
+class SecuritySettingsIn(BaseModel):
+    session_hours: int = Field(default=12, ge=1, le=720)
+    idle_minutes: int = Field(default=60, ge=0, le=10080)
+    login_max_attempts: int = Field(default=5, ge=3, le=100)
+    login_lock_minutes: int = Field(default=15, ge=1, le=1440)
+    api_requests_per_minute: int = Field(default=600, ge=10, le=100000)
