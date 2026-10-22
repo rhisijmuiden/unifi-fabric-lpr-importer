@@ -7,9 +7,19 @@ Vehicles arrive in two ways:
 - **CSV import** from the admin panel, with validation, preview and dry-run.
 - **REST API**: external systems such as Lobster push vehicles to this application. API documentation (OpenAPI) is published so vendors can set up the integration themselves.
 
-Imports are a full sync: vehicles missing from the source are removed from every console.
+Each vehicle becomes an Access user named by convention (first name = department, last name = plate, group =
+department + location, e.g. `Netwerktransport Wognum`). The vehicle list shows per console whether a plate is
+present. An import adds and updates by default; a full sync also removes vehicles of the same departments that the
+source no longer lists. Every add and removal on a console is in the audit log with the user or API key.
 
-> Status: phase 1 (foundation). See [ROADMAP.md](ROADMAP.md).
+> Status: phase 2 (consoles and vehicles). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
+> [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)).
+
+## Linking a console
+
+In UniFi Access on each console: **Settings › General › Advanced › API Token**, create a token with view and edit
+rights for users and user groups, then add the console under **Consoles** with its local IP address. This server
+must reach the console on port 12445 (HTTPS). Minimum version: UniFi Access 4.2.
 
 ## Installation (Debian 13)
 
@@ -49,6 +59,7 @@ LPR_DATABASE_URL=sqlite:///dev.db ../.venv/bin/alembic upgrade head
 LPR_DATABASE_URL=sqlite:///dev.db ../.venv/bin/python -m app.cli create-admin
 LPR_DATABASE_URL=sqlite:///dev.db ../.venv/bin/uvicorn app.main:app --port 8080 --reload
 ../.venv/bin/pytest            # backend tests
+# No console at hand? LPR_ACCESS_MOCK=demo fakes UniFi Access consoles with a few vehicles (empty = no data).
 cd ../frontend && npm ci && npm run dev   # UI on http://localhost:5173, API proxied to 8080
 ```
 

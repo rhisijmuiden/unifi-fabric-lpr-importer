@@ -27,16 +27,17 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [x] Audit log
 
 ## Phase 2 – Consoles and vehicles
-- [ ] Add console with step-by-step help (where to find the address and Access API token) and a test button
-- [ ] Read existing UniFi Access users and plates and adopt them into the app
-- [ ] Naming convention: first name = department, last name = plate in capitals, group = department + location
-- [ ] CSV import wizard: field mapping and conversion, filter (e.g. by location), assign filtered vehicles to a group; the group is created if missing and the UniFi Fabric distributes it
-- [ ] Only plate and department required; vehicles sorted by group automatically
-- [ ] Vehicle overview with present / not present per console; select several vehicles and "assign to"
-- [ ] Batch processing in the background with progress and report
-- [ ] Full sync with dry-run
-- [ ] Statistics page: totals per department, group and console
-- [ ] Audit every add and delete in UniFi with who did it (user or API key)
+- [x] Add console with step-by-step help (where to find the address and Access API token) and a test button
+- [x] Read existing UniFi Access users and plates and adopt them into the app
+- [x] Naming convention: first name = department, last name = plate in capitals, group = department + location
+- [x] CSV import wizard: field mapping and conversion, filter (e.g. by location), assign filtered vehicles to a group; the group is created if missing and the UniFi Fabric distributes it
+- [x] Only plate and department required; vehicles sorted by group automatically
+- [x] Vehicle overview with present / not present per console; select several vehicles and "assign to"
+- [x] Batch processing in the background with progress and report
+- [x] Full sync with dry-run
+- [x] Statistics page: totals per department, group and console
+- [x] Audit every add and delete in UniFi with who did it (user or API key)
+- [ ] Live test against a real console (needs an Access API token)
 
 ## Phase 3 – Backup and restore
 - [ ] Full and incremental backup (database, configuration, files)
@@ -45,8 +46,9 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [ ] Restore from remote, also on a fresh server through the installer
 
 ## Phase 4 – API integration (Lobster)
-- [ ] REST API with API keys, same conversion and batch path as the CSV import
-- [ ] OpenAPI docs and an integration guide (EN/NL)
+- [x] REST API with API keys, same conversion and batch path as the CSV import (built in phase 2)
+- [x] OpenAPI docs and an integration guide (EN/NL): `docs/api.md`, `docs/api.nl.md`
+- [ ] Live test with Lobster
 - [ ] Mail notifications: import report, failed sync, available update
 
 ## Phase 5 – v1.0

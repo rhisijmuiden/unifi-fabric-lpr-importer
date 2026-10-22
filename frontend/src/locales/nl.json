@@ -1,5 +1,8 @@
 {
-  "app": { "name": "Kenteken Importer", "subtitle": "UniFi Fabric" },
+  "app": {
+    "name": "Kenteken Importer",
+    "subtitle": "UniFi Fabric"
+  },
   "nav": {
     "overview": "Overzicht",
     "dashboard": "Dashboard",
@@ -13,7 +16,7 @@
     "mail": "Mailserver",
     "system": "Systeem & updates",
     "audit": "Auditlog",
-    "soon": "Binnenkort"
+    "apiKeys": "API-keys"
   },
   "common": {
     "save": "Opslaan",
@@ -36,8 +39,16 @@
     "next": "Volgende",
     "confirmDelete": "Weet je zeker dat je {{name}} wilt verwijderen?"
   },
-  "theme": { "light": "Licht", "dark": "Donker", "toggle": "Thema wisselen" },
-  "roles": { "admin": "Beheerder", "operator": "Operator", "viewer": "Alleen-lezen" },
+  "theme": {
+    "light": "Licht",
+    "dark": "Donker",
+    "toggle": "Thema wisselen"
+  },
+  "roles": {
+    "admin": "Beheerder",
+    "operator": "Operator",
+    "viewer": "Alleen-lezen"
+  },
   "login": {
     "title": "Inloggen",
     "subtitle": "Beheer kentekens van bedrijfswagens in UniFi Access",
@@ -56,7 +67,7 @@
   },
   "dashboard": {
     "welcome": "Welkom, {{name}}",
-    "intro": "De fundering staat. Voertuigbeheer, consoles koppelen en de importwizard volgen in fase 2.",
+    "intro": "Bedrijfswagens en hun kentekens op alle UniFi Access-consoles.",
     "version": "Versie",
     "channel": "Kanaal",
     "sso": "Single sign-on",
@@ -64,14 +75,16 @@
     "on": "Aan",
     "off": "Uit",
     "notConfigured": "Niet ingesteld",
-    "nextUp": "Volgende stap",
-    "nextItems": [
-      "Consoles koppelen met stap-voor-stap uitleg en testknop",
-      "Bestaande UniFi Access-gebruikers en kentekens uitlezen",
-      "CSV-importwizard met veldkoppeling en standplaatsfilter",
-      "Voertuigen toewijzen aan groepen volgens de naamconventie",
-      "Statistieken en overzicht aanwezig per console"
-    ]
+    "vehicles": "Voertuigen in de app",
+    "consoles": "Consoles verbonden",
+    "consolesValue": "{{ok}} van {{total}}",
+    "missing": "Ontbreekt op een console",
+    "unmanaged": "Kentekens niet in de app",
+    "startTitle": "Begin met het koppelen van je consoles",
+    "startBody": "Voeg de UniFi-consoles toe met hun Access API-token. Lees daarna de bestaande kentekens in of importeer een CSV-bestand.",
+    "recentJobs": "Recente taken",
+    "noJobs": "Er zijn nog geen taken uitgevoerd.",
+    "system": "Systeem"
   },
   "users": {
     "title": "Gebruikers",
@@ -197,10 +210,307 @@
     "ip": "IP-adres",
     "empty": "Geen regels gevonden."
   },
-  "soon": {
-    "title": "Komt in fase 2",
-    "body": "Dit deel van de applicatie staat in de roadmap en wordt hierna gebouwd."
+  "errors": {
+    "generic": "Er ging iets mis: {{detail}}"
   },
-  "errors": { "generic": "Er ging iets mis: {{detail}}" },
-  "userMenu": { "language": "Taal", "logout": "Uitloggen" }
+  "userMenu": {
+    "language": "Taal",
+    "logout": "Uitloggen"
+  },
+  "jobs": {
+    "kinds": {
+      "scan": "Consoles uitlezen",
+      "assign": "Toewijzen aan consoles",
+      "remove": "Verwijderen van consoles",
+      "import": "Importeren"
+    },
+    "status": {
+      "queued": "In de wachtrij",
+      "running": "Bezig…",
+      "done": "Klaar",
+      "failed": "Mislukt"
+    },
+    "progress": "{{processed}} / {{total}}",
+    "processed": "Verwerkt",
+    "succeeded": "Gelukt",
+    "failed": "Mislukt",
+    "report": "Rapport",
+    "onlyFailed": "Alleen fouten",
+    "crashed": "De taak is gestopt door een onverwachte fout. Zie de laatste regel van het rapport.",
+    "background": "Verder op de achtergrond"
+  },
+  "consoles": {
+    "title": "Consoles",
+    "description": "UniFi-consoles met UniFi Access. De app leest en wijzigt kentekens via de lokale Access API.",
+    "add": "Console toevoegen",
+    "name": "Naam",
+    "location": "Standplaats",
+    "locationHint": "De standplaats van deze console, standaard voor overgenomen kentekens.",
+    "host": "Adres",
+    "hostHint": "Lokaal IP-adres of hostnaam van de console.",
+    "port": "Poort",
+    "token": "Access API-token",
+    "tokenHint": "Wordt versleuteld opgeslagen en daarna nooit meer getoond.",
+    "verifyTls": "Certificaat controleren",
+    "verifyTlsHint": "Laat uit bij het eigen (self-signed) certificaat van de console.",
+    "activeHint": "Inactieve consoles worden overgeslagen bij importeren en uitlezen.",
+    "test": "Testen",
+    "testOk": "Verbonden. De console heeft {{users}} gebruikers en {{groups}} gebruikersgroepen.",
+    "testFailed": "De verbindingstest is mislukt",
+    "testErrors": {
+      "unauthorized": "Het token is geweigerd. Maak een nieuw API-token aan in UniFi Access en plak het opnieuw.",
+      "forbidden": "Het token heeft te weinig rechten. Geef minimaal lees- en schrijfrechten voor gebruikers.",
+      "connection_failed": "De console is niet bereikbaar. Controleer het adres en of poort 12445 openstaat vanaf deze server.",
+      "timeout": "De console reageerde niet op tijd. Controleer het adres en de firewall.",
+      "not_found": "Op dit adres is geen Access API gevonden. Controleer of UniFi Access 4.2 of nieuwer op deze console draait.",
+      "http_error": "De verbinding is mislukt. Staat “Certificaat controleren” aan, probeer het dan uit."
+    },
+    "connected": "Verbonden",
+    "unreachable": "Niet bereikbaar",
+    "notTested": "Niet getest",
+    "platesFound": "Kentekens op console",
+    "lastScan": "Laatst uitgelezen",
+    "lastTest": "Laatste test",
+    "scan": "Uitlezen",
+    "scanAll": "Alle consoles uitlezen",
+    "confirmDelete": "{{name}} uit deze app verwijderen? Op de console zelf verandert niets.",
+    "emptyTitle": "Nog geen consoles",
+    "emptyBody": "Koppel elke UniFi-console waarop UniFi Access draait. Je hebt het adres en een API-token nodig.",
+    "help": {
+      "title": "Waar vind je dit?",
+      "steps": [
+        {
+          "title": "Open UniFi Access",
+          "body": "Open de console in je browser (of via unifi.ui.com) en start de Access-applicatie."
+        },
+        {
+          "title": "Maak een API-token aan",
+          "body": "Ga naar Settings › General › Advanced › API Token en klik op Create New. Geef het een naam, bijvoorbeeld “License Plate Importer”."
+        },
+        {
+          "title": "Geef gebruikersrechten",
+          "body": "Kies minimaal View en Edit voor Users (en User Groups), en een geldigheid die bij jullie past."
+        },
+        {
+          "title": "Kopieer het token",
+          "body": "Het token wordt maar één keer getoond. Plak het in het veld hiernaast."
+        },
+        {
+          "title": "Vul het adres in",
+          "body": "Gebruik het lokale IP-adres van de console. Deze server moet hem bereiken op poort 12445 (HTTPS)."
+        },
+        {
+          "title": "Testen",
+          "body": "Klik op Testen. Werkt de verbinding, sla de console op en klik op Uitlezen om de bestaande kentekens te laden."
+        }
+      ]
+    },
+    "settings": {
+      "title": "UniFi Access-instellingen",
+      "description": "Hoe voertuigen op elke console worden vastgelegd.",
+      "notation": "Kentekennotatie in UniFi Access",
+      "notationHint": "De achternaam van de gebruiker gebruikt altijd de officiële notatie. Dit verandert alleen het kenteken zelf.",
+      "official": "Officieel (12-BDF-3)",
+      "compact": "Zonder streepjes (12BDF3)",
+      "deleteUsers": "Voertuiggebruiker verwijderen als het kenteken wordt verwijderd",
+      "deleteUsersHint": "Alleen gebruikers volgens de naamconventie (achternaam = kenteken) zonder andere kentekens worden verwijderd. Personen houden hun account."
+    },
+    "errors": {
+      "name_taken": "Er bestaat al een console met deze naam.",
+      "token_required": "Vul het Access API-token in."
+    }
+  },
+  "vehicles": {
+    "title": "Voertuigen",
+    "description": "Omschrijving",
+    "add": "Voertuig toevoegen",
+    "readConsoles": "Consoles uitlezen",
+    "plate": "Kenteken",
+    "plateHint": "Nederlandse kentekens krijgen automatisch de officiële notatie.",
+    "department": "Afdeling",
+    "location": "Standplaats",
+    "group": "Groep",
+    "groupHint": "Standaard: afdeling + standplaats. De groep wordt op de console aangemaakt als hij ontbreekt.",
+    "convention": "In UniFi Access",
+    "conventionUser": "Gebruiker",
+    "conventionGroup": "Groep",
+    "searchPlaceholder": "Zoek op kenteken, groep of omschrijving",
+    "allDepartments": "Alle afdelingen",
+    "allLocations": "Alle standplaatsen",
+    "allGroups": "Alle groepen",
+    "presence": "Aanwezigheid",
+    "presenceAll": "Alle voertuigen",
+    "presenceMissing": "Ontbreekt op een console",
+    "presenceComplete": "Op alle consoles",
+    "present": "Aanwezig",
+    "absent": "Niet aanwezig",
+    "notScanned": "Nog niet uitgelezen",
+    "selected": "{{count}} geselecteerd",
+    "selectAll": "Alles selecteren",
+    "assignTo": "Toewijzen aan…",
+    "assign": "Toewijzen",
+    "bulkEdit": "Bewerken",
+    "remove": "Verwijderen van consoles",
+    "assignTitle": "{{count}} voertuigen toewijzen",
+    "assignBody": "Elk voertuig krijgt een gebruiker (voornaam = afdeling, achternaam = kenteken), het kenteken, en wordt aan zijn groep toegevoegd. Bestaande gebruikers en groepen worden hergebruikt.",
+    "removeTitle": "{{count}} voertuigen van consoles verwijderen",
+    "removeBody": "De kentekens worden van de gekozen consoles gehaald. Dit wordt vastgelegd in het auditlog.",
+    "alsoDelete": "Ook uit deze app verwijderen",
+    "alsoDeleteHint": "Anders blijven de voertuigen in de lijst staan als niet aanwezig.",
+    "bulkEditTitle": "{{count}} voertuigen bewerken",
+    "bulkEditBody": "Alleen ingevulde velden worden gewijzigd. Een andere afdeling of standplaats past ook de groep aan, tenzij je zelf een groep kiest.",
+    "bulkGroupHint": "Laat leeg voor afdeling + standplaats.",
+    "adoptBanner": "Er zijn {{count}} kentekens op de consoles gevonden die deze app nog niet beheert.",
+    "adoptReview": "Bekijken en overnemen",
+    "adoptTitle": "Kentekens van de consoles overnemen",
+    "adoptBody": "Controleer de afdeling en standplaats. Bij gebruikers volgens de naamconventie zijn die al ingevuld.",
+    "adoptCount": "{{count}} over te nemen",
+    "adopt": "Overnemen",
+    "accessUser": "Access-gebruiker",
+    "noConvention": "Volgt de naamconventie niet",
+    "emptyTitle": "Geen voertuigen gevonden",
+    "emptyBody": "Lees de consoles uit om bestaande kentekens over te nemen, importeer een CSV-bestand of voeg een voertuig toe.",
+    "count": "{{count}} voertuigen",
+    "errors": {
+      "invalid_plate": "Dit is geen geldig kenteken.",
+      "plate_exists": "Dit kenteken staat al in de lijst."
+    },
+    "intro": "Alle bekende kentekens, met per console of ze in UniFi Access aanwezig zijn."
+  },
+  "import": {
+    "title": "Importeren",
+    "description": "Importeer voertuigen uit een CSV-bestand, deel ze in groepen in en registreer ze op de consoles.",
+    "steps": [
+      "Uploaden",
+      "Kolommen koppelen",
+      "Controleren & groeperen",
+      "Registreren"
+    ],
+    "dropTitle": "Sleep een CSV-bestand hierheen of klik om te kiezen",
+    "dropBody": "Gescheiden door puntkomma of komma, met een kopregel. Exports uit Excel werken ook. Er verandert pas iets bij de laatste stap.",
+    "mappingTitle": "Welke kolom is wat?",
+    "mappingBody": "{{file}} · {{count}} regels. De koppeling wordt onthouden voor de volgende import.",
+    "noColumn": "— niet in het bestand —",
+    "defaultPlaceholder": "Waarde als het leeg is",
+    "fields": {
+      "plate": "Kenteken",
+      "department": "Afdeling",
+      "location": "Standplaats",
+      "group_name": "Groep",
+      "description": "Omschrijving"
+    },
+    "fieldHints": {
+      "plate": "Wordt automatisch in de officiële notatie gezet.",
+      "department": "Wordt de voornaam van de Access-gebruiker.",
+      "location": "Voor de groep en het standplaatsfilter.",
+      "group_name": "Optioneel. Standaard: afdeling + standplaats.",
+      "description": "Optioneel, bijvoorbeeld merk of type."
+    },
+    "sampleTitle": "Voorbeeld",
+    "sampleBody": "De eerste regels zoals ze worden ingelezen.",
+    "status": {
+      "new": "Nieuw",
+      "changed": "Gewijzigd",
+      "unchanged": "Ongewijzigd",
+      "invalid": "Ongeldig",
+      "excluded": "Uitgesloten"
+    },
+    "errors": {
+      "invalid_plate": "Ongeldig kenteken",
+      "missing_department": "Geen afdeling",
+      "duplicate": "Dubbel",
+      "empty_file": "Het bestand is leeg.",
+      "too_many_rows": "Het bestand heeft meer dan 20.000 regels.",
+      "file_too_large": "Het bestand is groter dan 10 MB."
+    },
+    "groups": "Groepen",
+    "noGroup": "Geen groep",
+    "bulkField": "Wijzigen",
+    "assignGroup": "Toewijzen aan groep",
+    "setDepartment": "Afdeling instellen",
+    "setLocation": "Standplaats instellen",
+    "apply": "Toepassen",
+    "exclude": "Uitsluiten",
+    "include": "Meenemen",
+    "result": "Resultaat",
+    "visible": "{{count}} van {{total}} regels getoond",
+    "firstThousand": "alleen de eerste 1.000 staan in de lijst; gebruik de filters",
+    "consolesTitle": "Registreren op consoles",
+    "consolesBody": "De aantallen komen uit de laatste keer dat elke console is uitgelezen.",
+    "noConsoles": "Geen actieve consoles. De voertuigen worden alleen in de app opgeslagen.",
+    "basedOnScan": "Op basis van de laatste uitlezing",
+    "notScanned": "Nog niet uitgelezen: alles telt als nieuw",
+    "toAdd": "{{count}} toe te voegen",
+    "alreadyPresent": "{{count}} al aanwezig",
+    "toRemove": "{{count}} te verwijderen",
+    "summaryTitle": "Samenvatting",
+    "toImport": "Te importeren voertuigen",
+    "mode": "Werkwijze",
+    "modes": {
+      "upsert": "Toevoegen en bijwerken",
+      "upsertHint": "Voertuigen die niet in het bestand staan, blijven staan.",
+      "full": "Volledige synchronisatie",
+      "fullHint": "Voertuigen van de afdelingen in dit bestand die er niet meer in staan, worden uit de app en van alle consoles verwijderd."
+    },
+    "removeWarning": "{{count}} voertuigen worden verwijderd",
+    "start": "Importeren en registreren op {{count}} consoles",
+    "startStoreOnly": "Alleen in de app importeren",
+    "done": "Import afgerond",
+    "doneWithErrors": "Import afgerond met fouten",
+    "doneBody": "{{succeeded}} wijzigingen gelukt, {{failed}} mislukt.",
+    "toVehicles": "Naar voertuigen",
+    "another": "Nog een bestand importeren"
+  },
+  "stats": {
+    "title": "Statistieken",
+    "description": "Hoeveel voertuigen er geregistreerd staan, per afdeling, groep, standplaats en console.",
+    "vehicles": "Voertuigen",
+    "departments": "Afdelingen",
+    "groups": "Groepen",
+    "changes30d": "Kentekens toegevoegd / verwijderd",
+    "changesHint": "Op de consoles, laatste 30 dagen",
+    "perConsole": "Dekking per console",
+    "perConsoleHint": "Voertuigen uit de app die op elke console aanwezig zijn, op basis van de laatste uitlezing.",
+    "noConsoles": "Nog geen consoles gekoppeld.",
+    "scanned": "Uitgelezen {{time}}",
+    "present": "{{count}} aanwezig",
+    "missing": "{{count}} ontbreken",
+    "unmanaged": "{{count}} niet in de app",
+    "byDepartment": "Per afdeling",
+    "byLocation": "Per standplaats",
+    "byGroup": "Per groep",
+    "none": "Nog geen voertuigen.",
+    "activity": "Wijzigingen op de consoles",
+    "activityHint": "Kentekens toegevoegd en verwijderd per dag, laatste 30 dagen.",
+    "added": "Toegevoegd",
+    "removed": "Verwijderd",
+    "noActivity": "Geen wijzigingen in de laatste 30 dagen."
+  },
+  "apiKeys": {
+    "title": "API-keys",
+    "description": "Keys voor systemen zoals Lobster die voertuigen aanleveren via de REST API.",
+    "add": "Nieuwe API-key",
+    "create": "Key aanmaken",
+    "name": "Naam",
+    "nameHint": "Staat in het auditlog bij elke wijziging met deze key.",
+    "allowDelete": "Verwijderen van voertuigen toestaan",
+    "allowDeleteHint": "Nodig voor volledige synchronisatie en voor DELETE-verzoeken.",
+    "created": "API-key aangemaakt",
+    "copyOnce": "Kopieer de key nu. Hij wordt maar één keer getoond en is later niet meer op te vragen.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "rights": "Rechten",
+    "readWrite": "Lezen en toevoegen",
+    "readWriteDelete": "Lezen, toevoegen en verwijderen",
+    "toggleDelete": "Klik om te wijzigen",
+    "lastUsed": "Laatst gebruikt",
+    "empty": "Nog geen API-keys.",
+    "docsTitle": "Zo werkt het",
+    "docsBody": "Stuur voertuigen als JSON met de key als bearer-token. Dezelfde conversie en naamconventie als bij de CSV-import worden toegepast.",
+    "openDocs": "Open de interactieve API-documentatie",
+    "guide": "De koppelhandleiding voor de leverancier staat in docs/api.md (Engels) en docs/api.nl.md (Nederlands) in de repository.",
+    "errors": {
+      "name_taken": "Er bestaat al een key met deze naam."
+    }
+  }
 }

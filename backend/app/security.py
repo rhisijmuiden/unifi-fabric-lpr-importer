@@ -5,10 +5,11 @@ from datetime import datetime, timedelta, timezone
 
 from cryptography.fernet import Fernet, InvalidToken
 from pwdlib import PasswordHash
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .config import get_settings
-from .models import User, UserSession
+from .models import ApiKey, User, UserSession
 
 SESSION_COOKIE = "lpr_session"
 
@@ -77,3 +78,23 @@ def decrypt(value: str) -> str | None:
         return _fernet().decrypt(value.encode()).decode()
     except InvalidToken:
         return None
+
+
+API_KEY_PREFIX = "lpr_"
+
+
+def new_api_key() -> tuple[str, str, str]:
+    """Return (key shown once, short prefix for the UI, hash stored in the database)."""
+    key = API_KEY_PREFIX + secrets.token_urlsafe(32)
+    return key, key[:12], _token_id(key)
+
+
+def resolve_api_key(db: Session, key: str) -> ApiKey | None:
+    if not key.startswith(API_KEY_PREFIX):
+        return None
+    row = db.scalar(select(ApiKey).where(ApiKey.key_hash == _token_id(key)))
+    if row is None or not row.is_active:
+        return None
+    row.last_used_at = datetime.now(timezone.utc)
+    db.commit()
+    return row

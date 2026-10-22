@@ -40,7 +40,7 @@ export function Alert({ tone = "info", children }: { tone?: keyof typeof alertIc
   );
 }
 
-export function Dialog({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; wide?: boolean }) {
+export function Dialog({ open, onClose, title, children, wide, xl }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; wide?: boolean; xl?: boolean }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -53,7 +53,7 @@ export function Dialog({ open, onClose, title, children, wide }: { open: boolean
       <div
         role="dialog"
         aria-modal="true"
-        className={cn("w-full rounded-lg border border-line bg-raised shadow-2xl", wide ? "max-w-2xl" : "max-w-lg")}
+        className={cn("w-full rounded-lg border border-line bg-raised shadow-2xl", xl ? "max-w-4xl" : wide ? "max-w-2xl" : "max-w-lg")}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-line px-6 py-4">

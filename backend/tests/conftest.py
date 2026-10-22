@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app import db as app_db
 from app.config import get_settings
+from app.services import access_mock
 from app.models import User
 from app.security import hash_password
 
@@ -16,7 +17,10 @@ def app_env(tmp_path, monkeypatch):
     monkeypatch.setenv("LPR_SECRET_KEY", "test-secret")
     monkeypatch.setenv("LPR_STATE_DIR", str(tmp_path / "state"))
     monkeypatch.setenv("LPR_FRONTEND_DIST", str(tmp_path / "no-dist"))
+    monkeypatch.setenv("LPR_ACCESS_MOCK", "empty")
+    monkeypatch.setenv("LPR_JOBS_INLINE", "true")
     get_settings.cache_clear()
+    access_mock.reset()
     app_db.reset_engine()
     app_db.Base.metadata.create_all(app_db.get_engine())
     yield tmp_path
