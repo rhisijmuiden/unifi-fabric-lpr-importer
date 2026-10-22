@@ -30,13 +30,30 @@ def _token_id(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def create_session(db: Session, user: User) -> str:
+def _aware(value: datetime | None) -> datetime | None:
+    if value is not None and value.tzinfo is None:  # SQLite drops the timezone
+        return value.replace(tzinfo=timezone.utc)
+    return value
+
+
+def session_hours(db: Session) -> int:
+    from .settings_store import get_section
+
+    return int(get_section(db, "security")["session_hours"])
+
+
+def create_session(db: Session, user: User, ip: str = "", user_agent: str = "") -> str:
     token = secrets.token_urlsafe(32)
-    expires = datetime.now(timezone.utc) + timedelta(hours=get_settings().session_hours)
-    db.add(UserSession(id=_token_id(token), user_id=user.id, expires_at=expires))
-    user.last_login_at = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
+    expires = now + timedelta(hours=session_hours(db))
+    db.add(UserSession(id=_token_id(token), user_id=user.id, expires_at=expires, last_seen_at=now, ip_address=ip[:64], user_agent=user_agent[:255]))
+    user.last_login_at = now
     db.commit()
     return token
+
+
+# Activity is written at most this often, not on every request.
+SEEN_INTERVAL = timedelta(seconds=60)
 
 
 def resolve_session(db: Session, token: str | None) -> User | None:
@@ -45,14 +62,24 @@ def resolve_session(db: Session, token: str | None) -> User | None:
     session = db.get(UserSession, _token_id(token))
     if session is None:
         return None
-    expires = session.expires_at
-    if expires.tzinfo is None:  # SQLite drops the timezone
-        expires = expires.replace(tzinfo=timezone.utc)
-    if expires < datetime.now(timezone.utc) or not session.user.is_active:
+    from .settings_store import get_section
+
+    now = datetime.now(timezone.utc)
+    idle = int(get_section(db, "security")["idle_minutes"])
+    seen = _aware(session.last_seen_at) or _aware(session.created_at)
+    expired = _aware(session.expires_at) < now or (idle > 0 and seen is not None and seen + timedelta(minutes=idle) < now)
+    if expired or not session.user.is_active:
         db.delete(session)
         db.commit()
         return None
+    if seen is None or now - seen > SEEN_INTERVAL:
+        session.last_seen_at = now
+        db.commit()
     return session.user
+
+
+def session_id(token: str | None) -> str | None:
+    return _token_id(token) if token else None
 
 
 def delete_session(db: Session, token: str | None) -> None:
@@ -62,6 +89,15 @@ def delete_session(db: Session, token: str | None) -> None:
     if session is not None:
         db.delete(session)
         db.commit()
+
+
+def revoke_sessions(db: Session, user_id: int, keep: str | None = None) -> int:
+    """End every session of a user, except the session id `keep`. Returns the number ended."""
+    sessions = [s for s in db.scalars(select(UserSession).where(UserSession.user_id == user_id)) if s.id != keep]
+    for s in sessions:
+        db.delete(s)
+    db.commit()
+    return len(sessions)
 
 
 def _fernet(secret_key: str | None = None) -> Fernet:
@@ -88,6 +124,21 @@ def new_api_key() -> tuple[str, str, str]:
     """Return (key shown once, short prefix for the UI, hash stored in the database)."""
     key = API_KEY_PREFIX + secrets.token_urlsafe(32)
     return key, key[:12], _token_id(key)
+
+
+# Compared against when the user name does not exist, so a failed sign-in takes as long either way.
+_DUMMY_HASH = _password_hash.hash(secrets.token_urlsafe(16))
+
+
+def verify_password_timed(password: str, hashed: str | None) -> bool:
+    if not hashed:
+        _password_hash.verify(password, _DUMMY_HASH)
+        return False
+    return _password_hash.verify(password, hashed)
+
+
+# Columns outside the settings table that hold encrypted secrets: (table, column).
+ENCRYPTED_COLUMNS = (("consoles", "api_token"), ("backup_targets", "password"), ("import_schedules", "password"))
 
 
 def resolve_api_key(db: Session, key: str) -> ApiKey | None:

@@ -1,7 +1,3 @@
-import csv
-import io
-import re
-
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
@@ -11,66 +7,21 @@ from ..deps import require_operator, user_actor
 from ..models import User
 from ..schemas import ImportIn, ImportMappingIn
 from ..services import jobs
+from ..services.csvfile import MAX_BYTES, CsvError, read_csv, suggest_mapping
 from ..services.vehicles import plan_import, run_import
 from ..settings_store import get_section, update_section
 
 router = APIRouter(prefix="/api/import", tags=["import"])
-
-MAX_BYTES = 10 * 1024 * 1024
-MAX_ROWS = 20000
-
-# Header names (lower case, letters only) recognised per field, Dutch and English.
-HINTS = {
-    "plate": ["kenteken", "kentekens", "plate", "licenseplate", "licenceplate", "registration", "nummerplaat", "regnr"],
-    "department": ["afdeling", "department", "divisie", "bedrijfsonderdeel", "businessunit", "dept"],
-    "location": ["standplaats", "vestiging", "locatie", "location", "depot", "site", "plaats"],
-    "group_name": ["groep", "group", "usergroup", "toegangsgroep"],
-    "description": ["omschrijving", "description", "merk", "type", "model", "opmerking", "naam", "voertuig"],
-}
-
-
-def _norm(header: str) -> str:
-    return re.sub(r"[^a-z]", "", header.lower())
-
-
-def suggest_mapping(headers: list[str]) -> dict[str, str]:
-    mapping: dict[str, str] = {}
-    for field, names in HINTS.items():
-        for header in headers:
-            if header not in mapping.values() and _norm(header) in names:
-                mapping[field] = header
-                break
-    return mapping
-
-
-def read_csv(content: bytes) -> tuple[list[str], list[dict[str, str]]]:
-    try:
-        text = content.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        text = content.decode("cp1252", errors="replace")  # Excel on Windows
-    sample = text[:4096]
-    try:
-        delimiter = csv.Sniffer().sniff(sample, delimiters=";,\t|").delimiter
-    except csv.Error:
-        delimiter = ";" if sample.count(";") > sample.count(",") else ","
-    reader = csv.reader(io.StringIO(text), delimiter=delimiter)
-    lines = [r for r in reader if any(c.strip() for c in r)]
-    if not lines:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "empty_file")
-    headers = [h.strip() or f"Column {i + 1}" for i, h in enumerate(lines[0])]
-    if len(lines) - 1 > MAX_ROWS:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "too_many_rows")
-    rows = [{h: (r[i].strip() if i < len(r) else "") for i, h in enumerate(headers)} for r in lines[1:]]
-    return headers, rows
 
 
 @router.post("/parse")
 async def parse(file: UploadFile = File(...), db: Session = Depends(get_db), _: User = Depends(require_operator)) -> dict:
     """Read a CSV file and suggest which column holds what. Nothing is stored yet."""
     content = await file.read(MAX_BYTES + 1)
-    if len(content) > MAX_BYTES:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "file_too_large")
-    headers, rows = read_csv(content)
+    try:
+        headers, rows = read_csv(content)
+    except CsvError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, exc.code) from exc
     saved = get_section(db, "import")
     mapping = suggest_mapping(headers)
     # The last used mapping wins when its columns exist in this file.

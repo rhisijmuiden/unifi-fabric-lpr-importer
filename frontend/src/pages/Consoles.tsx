@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Pencil, Plus, RefreshCw, Server, Trash2, Wifi, XCircle } from "lucide-react";
-import { api, type Console, type ConsoleTestResult, type Job } from "@/lib/api";
+import { api, type BackupSchedule, type Console, type ConsoleTestResult, type Job } from "@/lib/api";
 import { useMe } from "@/lib/auth";
 import { errorMessage } from "@/lib/errors";
 import { formatDate } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Field, Input, Switch } from "@/components/ui/form";
 import { Alert, Badge, Dialog, PageHeader } from "@/components/ui/misc";
 import { JobDialog } from "@/components/JobDialog";
+import { ScheduleEditor } from "@/components/ScheduleEditor";
 import { useCanEdit } from "@/components/vehicles";
 
 function TestResult({ result }: { result: ConsoleTestResult }) {
@@ -145,7 +146,7 @@ function StatusBadge({ c }: { c: Console }) {
 function AccessSettings() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "access"], queryFn: () => api<{ plate_notation: string; delete_vehicle_users: boolean }>("/settings/access") });
+  const { data } = useQuery({ queryKey: ["settings", "access"], queryFn: () => api<{ plate_notation: string; delete_vehicle_users: boolean; scan_schedule: BackupSchedule; next_scan: string | null }>("/settings/access") });
   const save = useMutation({
     mutationFn: (body: Record<string, unknown>) => api("/settings/access", { method: "PUT", body: { ...data, ...body } }),
     onSuccess: (d) => qc.setQueryData(["settings", "access"], d),
@@ -179,6 +180,13 @@ function AccessSettings() {
           onChange={(v) => save.mutate({ delete_vehicle_users: v })}
           label={t("consoles.settings.deleteUsers")}
           description={t("consoles.settings.deleteUsersHint")}
+        />
+        <ScheduleEditor
+          label={t("consoles.settings.scan")}
+          description={t("consoles.settings.scanHint")}
+          value={data.scan_schedule}
+          next={data.next_scan}
+          onChange={(v) => save.mutate({ scan_schedule: v })}
         />
       </CardBody>
     </Card>

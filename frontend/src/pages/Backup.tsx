@@ -22,7 +22,6 @@ import {
 import {
   api,
   type BackupItem,
-  type BackupSchedule,
   type BackupSettings,
   type BackupTarget,
   type BackupTestResult,
@@ -35,6 +34,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Field, Input, Select, Switch } from "@/components/ui/form";
 import { Alert, Badge, Dialog, PageHeader } from "@/components/ui/misc";
 import { JobDialog } from "@/components/JobDialog";
+import { ScheduleEditor } from "@/components/ScheduleEditor";
 
 const PORTS = { ftp: 21, ftps: 21, scp: 22 } as const;
 
@@ -367,70 +367,6 @@ function BackupsDialog({ target, onClose, onJob }: { target: BackupTarget; onClo
 
 // ---------------------------------------------------------------- settings
 
-const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
-
-function ScheduleEditor({ kind, value, next, onChange }: { kind: "full" | "incremental"; value: BackupSchedule; next: string | null; onChange: (v: BackupSchedule) => void }) {
-  const { t, i18n } = useTranslation();
-  const set = <K extends keyof BackupSchedule>(k: K, v: BackupSchedule[K]) => onChange({ ...value, [k]: v });
-  const weekday = (d: number) => new Date(2026, 9, 19 + d).toLocaleDateString(i18n.language === "nl" ? "nl-NL" : "en-GB", { weekday: "long" });
-  return (
-    <div className="rounded-lg border border-line p-4">
-      <Switch checked={value.enabled} onChange={(v) => set("enabled", v)} label={t(`backup.schedule.${kind}`)} description={t(`backup.schedule.${kind}Hint`)} />
-      {value.enabled && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Field label={t("backup.schedule.frequency")}>
-            <Select value={value.frequency} onChange={(e) => set("frequency", e.target.value as BackupSchedule["frequency"])}>
-              {(["hourly", "daily", "weekly", "monthly"] as const).map((f) => (
-                <option key={f} value={f}>
-                  {t(`backup.schedule.${f}`)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {value.frequency === "weekly" && (
-            <Field label={t("backup.schedule.weekday")}>
-              <Select value={value.weekday} onChange={(e) => set("weekday", Number(e.target.value))}>
-                {WEEKDAYS.map((d) => (
-                  <option key={d} value={d}>
-                    {weekday(d)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          )}
-          {value.frequency === "monthly" && (
-            <Field label={t("backup.schedule.monthday")}>
-              <Select value={value.monthday} onChange={(e) => set("monthday", Number(e.target.value))}>
-                {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          )}
-          {value.frequency === "hourly" ? (
-            <Field label={t("backup.schedule.minute")}>
-              <Select value={value.time.slice(3)} onChange={(e) => set("time", `00:${e.target.value}`)}>
-                {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map((m) => (
-                  <option key={m} value={m}>
-                    :{m}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          ) : (
-            <Field label={t("backup.schedule.time")}>
-              <Input type="time" value={value.time} onChange={(e) => set("time", e.target.value || "02:00")} />
-            </Field>
-          )}
-          {next && <div className="text-xs text-muted sm:col-span-3">{t("backup.schedule.next", { date: formatDate(next, i18n.language) })}</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function SettingsCards({ settings }: { settings: BackupSettings }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -518,8 +454,8 @@ function SettingsCards({ settings }: { settings: BackupSettings }) {
       <Card>
         <CardHeader title={t("backup.scheduleTitle")} description={t("backup.scheduleHint")} />
         <CardBody className="space-y-4">
-          <ScheduleEditor kind="full" value={form.schedule_full} next={form.next_runs.full} onChange={(v) => set("schedule_full", v)} />
-          <ScheduleEditor kind="incremental" value={form.schedule_incremental} next={form.next_runs.incremental} onChange={(v) => set("schedule_incremental", v)} />
+          <ScheduleEditor label={t("backup.schedule.full")} description={t("backup.schedule.fullHint")} value={form.schedule_full} next={form.next_runs.full} onChange={(v) => set("schedule_full", v)} />
+          <ScheduleEditor label={t("backup.schedule.incremental")} description={t("backup.schedule.incrementalHint")} value={form.schedule_incremental} next={form.next_runs.incremental} onChange={(v) => set("schedule_incremental", v)} />
         </CardBody>
       </Card>
 

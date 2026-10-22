@@ -1,9 +1,11 @@
 import { useState, type ComponentType } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   BarChart3,
   Bell,
+  CalendarClock,
   Car,
   DatabaseBackup,
   FileUp,
@@ -18,6 +20,7 @@ import {
   RefreshCw,
   ScrollText,
   Server,
+  ShieldCheck,
   Sun,
   Users,
   X,
@@ -25,10 +28,12 @@ import {
 import { useLogout, useMe } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { setLanguage } from "@/i18n";
-import { api, type Role } from "@/lib/api";
+import { api, type Role, type SessionInfo } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { InfoDialog } from "@/components/InfoDialog";
+import { Dialog } from "@/components/ui/misc";
+import { SessionsList } from "@/components/SessionsList";
 import { useSystemInfo } from "@/lib/system";
 
 interface NavItem {
@@ -47,6 +52,7 @@ function useNav(): { title: string; items: NavItem[] }[] {
         { to: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
         { to: "/vehicles", label: t("nav.vehicles"), icon: Car },
         { to: "/import", label: t("nav.import"), icon: FileUp, roles: ["admin", "operator"] },
+        { to: "/import/schedules", label: t("nav.schedules"), icon: CalendarClock, roles: ["admin", "operator"] },
         { to: "/consoles", label: t("nav.consoles"), icon: Server },
         { to: "/statistics", label: t("nav.statistics"), icon: BarChart3 },
       ],
@@ -60,6 +66,7 @@ function useNav(): { title: string; items: NavItem[] }[] {
         { to: "/admin/mail", label: t("nav.mail"), icon: Mail, roles: ["admin"] },
         { to: "/admin/notifications", label: t("nav.notifications"), icon: Bell, roles: ["admin"] },
         { to: "/admin/backup", label: t("nav.backup"), icon: DatabaseBackup, roles: ["admin"] },
+        { to: "/admin/security", label: t("nav.security"), icon: ShieldCheck, roles: ["admin"] },
         { to: "/admin/system", label: t("nav.system"), icon: RefreshCw, roles: ["admin"] },
         { to: "/admin/audit", label: t("nav.audit"), icon: ScrollText, roles: ["admin", "operator"] },
       ],
@@ -100,7 +107,7 @@ function Sidebar({ onNavigate, onInfo }: { onNavigate?: () => void; onInfo: () =
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
-                      end={item.to === "/"}
+                      end={item.to === "/" || item.to === "/import"}
                       onClick={onNavigate}
                       className={({ isActive }) =>
                         cn(
@@ -133,6 +140,38 @@ function Sidebar({ onNavigate, onInfo }: { onNavigate?: () => void; onInfo: () =
   );
 }
 
+function MySessionsDialog({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const sessions = useQuery({ queryKey: ["my-sessions"], queryFn: () => api<SessionInfo[]>("/auth/sessions") });
+  const end = useMutation({
+    mutationFn: (s: SessionInfo) => api(`/auth/sessions/${s.id}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-sessions"] }),
+  });
+  const endOthers = useMutation({
+    mutationFn: () => api("/auth/sessions/end-others", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-sessions"] }),
+  });
+  const others = sessions.data?.filter((s) => !s.current).length ?? 0;
+  return (
+    <Dialog open onClose={onClose} title={t("security.mySessions")} wide>
+      <p className="text-sm text-muted">{t("security.mySessionsHint")}</p>
+      <div className="mt-2">{sessions.data && <SessionsList sessions={sessions.data} onEnd={(s) => end.mutate(s)} ending={end.isPending ? end.variables?.id : null} />}</div>
+      <div className="mt-4 flex justify-end gap-2">
+        {others > 0 && (
+          <Button variant="outline" loading={endOthers.isPending} onClick={() => endOthers.mutate()}>
+            <LogOut className="h-4 w-4" />
+            {t("security.endOthers", { count: others })}
+          </Button>
+        )}
+        <Button variant="ghost" onClick={onClose}>
+          {t("common.close")}
+        </Button>
+      </div>
+    </Dialog>
+  );
+}
+
 export function AppLayout() {
   const { t, i18n } = useTranslation();
   const { data: me, refetch } = useMe();
@@ -140,6 +179,7 @@ export function AppLayout() {
   const { dark, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [sessionsOpen, setSessionsOpen] = useState(false);
 
   const changeLanguage = async (lang: "en" | "nl") => {
     setLanguage(lang);
@@ -187,7 +227,11 @@ export function AppLayout() {
           <Button variant="ghost" size="icon" onClick={toggle} aria-label={t("theme.toggle")}>
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <div className="ml-2 hidden items-center gap-3 border-l border-line pl-4 sm:flex">
+          <button
+            onClick={() => setSessionsOpen(true)}
+            title={t("security.mySessions")}
+            className="ml-2 hidden items-center gap-3 border-l border-line pl-4 text-left sm:flex"
+          >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nacht text-sm font-bold text-white ring-2 ring-koraal/70">
               {(me?.display_name || me?.username || "?").slice(0, 1).toUpperCase()}
             </div>
@@ -195,7 +239,7 @@ export function AppLayout() {
               <div className="text-sm font-semibold">{me?.display_name || me?.username}</div>
               <div className="text-xs text-muted">{me && t(`roles.${me.role}`)}</div>
             </div>
-          </div>
+          </button>
           <Button variant="ghost" size="icon" onClick={logout} aria-label={t("userMenu.logout")} title={t("userMenu.logout")}>
             <LogOut className="h-4 w-4" />
           </Button>
@@ -205,6 +249,7 @@ export function AppLayout() {
         </main>
       </div>
       <InfoDialog open={infoOpen} onClose={() => setInfoOpen(false)} />
+      {sessionsOpen && <MySessionsDialog onClose={() => setSessionsOpen(false)} />}
     </div>
   );
 }

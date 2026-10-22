@@ -57,7 +57,12 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [ ] Live test with Lobster
 
 ## Phase 5 – v1.0
-- [ ] Scheduled imports
-- [ ] Dashboard with status per location and recent syncs
-- [ ] Security hardening: rate limiting, session management, encrypted secrets
-- [ ] Tests, manual (EN/NL), release v1.0 on `main`
+- [x] Scheduled imports (HTTPS, SCP, FTPS, FTP) and automatic console reads
+- [x] Dashboard with status per location and recent syncs
+- [x] Security hardening: rate limiting, session management, encrypted secrets, security headers, HTTPS on 8080 from the installer
+- [x] Tests, manual (EN/NL), release v1.0 (on `test`; merged into `main` after approval)
+
+## Still to verify in production
+- [ ] Phase 0 gate on a real console: create a vehicle user, assign and remove a plate, gate opens (needs an Access API token)
+- [ ] Live delivery from Lobster
+- [ ] Installer on a real Debian 13 VM (HTTP and HTTPS)

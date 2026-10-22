@@ -479,6 +479,9 @@
           },
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
           }
         }
       }
@@ -511,6 +514,9 @@
           },
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
           }
         }
       }
@@ -577,6 +583,9 @@
           },
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
           },
           "422": {
             "description": "Validation Error",
@@ -645,6 +654,9 @@
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
           },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
+          },
           "200": {
             "description": "Dry run: the plan, nothing changed. Or a replay of an earlier request with the same Idempotency-Key."
           },
@@ -700,6 +712,9 @@
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
           },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
+          },
           "404": {
             "description": "`not_found`"
           },
@@ -749,6 +764,9 @@
           },
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
           },
           "404": {
             "description": "`not_found`"
@@ -801,6 +819,9 @@
           },
           "403": {
             "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "429": {
+            "description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."
           },
           "404": {
             "description": "`not_found`"

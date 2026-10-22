@@ -42,6 +42,8 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         "plate_notation": "compact",
         # When a plate is removed, also delete the Access user if it only held that vehicle.
         "delete_vehicle_users": True,
+        # Read the plates of every console regularly, so the vehicle list and dashboard stay current.
+        "scan_schedule": {"enabled": True, "frequency": "hourly", "time": "00:15", "weekday": 0, "monthday": 1},
     },
     "backup": {
         # Encrypts every backup (AES-256-GCM). Needed to restore, also on a new server.
@@ -61,6 +63,17 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         "import_report": "failure",  # failure | always | never (CSV and API imports)
         "sync_failure": True,  # registering or removing plates on a console failed
         "update_available": True,  # a new version is available on the installed channel
+    },
+    "security": {
+        # A session ends this many hours after sign-in, or after this many minutes without activity (0 = never).
+        "session_hours": 12,
+        "idle_minutes": 60,
+        # Failed sign-ins per user name before it is locked for `login_lock_minutes`.
+        # An IP address is locked after four times as many failures.
+        "login_max_attempts": 5,
+        "login_lock_minutes": 15,
+        # Requests per minute per API key on the REST API (/api/v1).
+        "api_requests_per_minute": 600,
     },
     "import": {
         # Last used CSV column mapping, offered again on the next import.

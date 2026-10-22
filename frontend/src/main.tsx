@@ -21,6 +21,8 @@ import { StatisticsPage } from "@/pages/Statistics";
 import { ApiKeysPage } from "@/pages/ApiKeys";
 import { BackupPage } from "@/pages/Backup";
 import { NotificationsPage } from "@/pages/Notifications";
+import { ImportSchedulesPage } from "@/pages/ImportSchedules";
+import { SecurityPage } from "@/pages/Security";
 import { setLanguage } from "@/i18n";
 import { useEffect } from "react";
 
@@ -54,6 +56,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="vehicles" element={<VehiclesPage />} />
             <Route path="consoles" element={<ConsolesPage />} />
             <Route path="import" element={<RequireAuth roles={["admin", "operator"]}><ImportPage /></RequireAuth>} />
+            <Route path="import/schedules" element={<RequireAuth roles={["admin", "operator"]}><ImportSchedulesPage /></RequireAuth>} />
             <Route path="statistics" element={<StatisticsPage />} />
             <Route path="admin/api-keys" element={<RequireAuth roles={["admin"]}><ApiKeysPage /></RequireAuth>} />
             <Route path="admin/users" element={<RequireAuth roles={["admin"]}><UsersPage /></RequireAuth>} />
@@ -61,6 +64,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="admin/mail" element={<RequireAuth roles={["admin"]}><MailSettingsPage /></RequireAuth>} />
             <Route path="admin/notifications" element={<RequireAuth roles={["admin"]}><NotificationsPage /></RequireAuth>} />
             <Route path="admin/backup" element={<RequireAuth roles={["admin"]}><BackupPage /></RequireAuth>} />
+            <Route path="admin/security" element={<RequireAuth roles={["admin"]}><SecurityPage /></RequireAuth>} />
             <Route path="admin/system" element={<RequireAuth roles={["admin"]}><SystemPage /></RequireAuth>} />
             <Route path="admin/audit" element={<RequireAuth roles={["admin", "operator"]}><AuditPage /></RequireAuth>} />
             <Route path="*" element={<Navigate to="/" replace />} />

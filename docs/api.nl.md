@@ -30,8 +30,11 @@ Authorization: Bearer lpr_...
   `203.0.113.10` of `10.20.0.0/16`). Verzoeken vanaf andere adressen krijgen `403 ip_not_allowed`. Geef de
   beheerder het publieke IP-adres (of de adressen) waarvandaan jullie systeem verbinding maakt.
 - De applicatie luistert op poort 8080. Gaat het verkeer over internet, verbind dan alleen via HTTPS
-  (reverse proxy) of een VPN; de beheerder geeft je het adres. De key is een wachtwoord: houd hem buiten
-  logbestanden en broncode.
+  (de installer kan HTTPS op poort 8080 aanzetten, of er staat een reverse proxy voor) of een VPN; de beheerder
+  geeft je het adres. De key is een wachtwoord: houd hem buiten logbestanden en broncode.
+- Elke key mag een beperkt aantal verzoeken per minuut doen (standaard 600). Daarboven antwoordt de API met
+  `429 too_many_requests` en een header `Retry-After` in seconden. Een adres dat binnen een minuut meer dan 30
+  onjuiste keys stuurt, wordt op dezelfde manier een minuut gepauzeerd.
 
 ## Velden van een voertuig
 
@@ -140,6 +143,7 @@ Fouten zijn JSON met een veld `detail`.
 | 403 | `delete_not_allowed` | De key mag geen voertuigen verwijderen |
 | 404 | `not_found` | Voertuig of taak niet gevonden |
 | 422 | (lijst) | De body voldoet niet aan het schema, bijvoorbeeld meer dan 20.000 voertuigen |
+| 429 | `too_many_requests` | Limiet bereikt; probeer opnieuw na het aantal seconden in `Retry-After` |
 
 ## Voorbeelden
 

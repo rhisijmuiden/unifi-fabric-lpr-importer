@@ -47,7 +47,7 @@ from .. import audit
 from ..config import get_settings
 from ..db import get_engine
 from ..models import BackupTarget, utcnow
-from ..security import decrypt, encrypt
+from ..security import ENCRYPTED_COLUMNS, decrypt, encrypt
 from ..settings_store import SECRET_FIELDS, get_section
 from . import remote as remote_mod
 from .jobs import JobContext
@@ -630,7 +630,7 @@ def _reencrypt(tables: dict[str, dict[str, Any]], old_key: str) -> int:
             value = json.loads(value)
         if isinstance(value, dict):
             row["value"] = {k: convert(v) if k in fields and isinstance(v, str) else v for k, v in value.items()}
-    for table, column in (("consoles", "api_token"), ("backup_targets", "password")):
+    for table, column in ENCRYPTED_COLUMNS:
         for row in tables.get(table, {}).get("rows", {}).values():
             if isinstance(row.get(column), str):
                 row[column] = convert(row[column])
@@ -689,11 +689,15 @@ def _known_revision(revision: str) -> bool:
         return False
 
 
+SESSION_DETAILS = ("last_seen_at", "ip_address", "user_agent")
+
+
 def _sessions(conn: Connection) -> list[dict[str, Any]]:
     meta = MetaData()
     sessions = Table("user_sessions", meta, autoload_with=conn)
     users = Table("users", meta, autoload_with=conn)
-    query = select(sessions.c.id, sessions.c.created_at, sessions.c.expires_at, users.c.username).join_from(
+    extra = [sessions.c[name] for name in SESSION_DETAILS if name in sessions.c]
+    query = select(sessions.c.id, sessions.c.created_at, sessions.c.expires_at, *extra, users.c.username).join_from(
         sessions, users, sessions.c.user_id == users.c.id
     )
     return [dict(r) for r in conn.execute(query).mappings()]
@@ -704,8 +708,9 @@ def _restore_sessions(conn: Connection, sessions: list[dict[str, Any]]) -> None:
     conn.execute(text("DELETE FROM user_sessions"))
     users = {r.username: r.id for r in conn.execute(text("SELECT id, username, is_active FROM users")) if r.is_active}
     table = Table("user_sessions", MetaData(), autoload_with=conn)
+    details = [name for name in SESSION_DETAILS if name in table.c]
     keep = [
-        {"id": s["id"], "user_id": users[s["username"]], "created_at": s["created_at"], "expires_at": s["expires_at"]}
+        {"id": s["id"], "user_id": users[s["username"]], "created_at": s["created_at"], "expires_at": s["expires_at"], **{k: s[k] for k in details if k in s}}
         for s in sessions
         if s["username"] in users
     ]

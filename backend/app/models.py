@@ -39,6 +39,9 @@ class UserSession(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ip_address: Mapped[str] = mapped_column(String(64), default="", server_default="")
+    user_agent: Mapped[str] = mapped_column(String(255), default="", server_default="")
 
     user: Mapped[User] = relationship(back_populates="sessions")
 
@@ -199,3 +202,45 @@ class BackupTarget(Base):
     last_backup_name: Mapped[str] = mapped_column(String(100), default="")
     last_status: Mapped[str] = mapped_column(String(20), default="")  # "" | ok | failed
     last_message: Mapped[str] = mapped_column(Text, default="")
+
+
+class ImportSchedule(Base):
+    """A CSV file fetched on a schedule (HTTPS, SCP, FTPS or FTP) and imported like the wizard does."""
+
+    __tablename__ = "import_schedules"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    protocol: Mapped[str] = mapped_column(String(10))  # https | scp | ftps | ftp
+    url: Mapped[str] = mapped_column(String(1000), default="")  # https only
+    host: Mapped[str] = mapped_column(String(255), default="")
+    port: Mapped[int] = mapped_column(Integer, default=22)
+    username: Mapped[str] = mapped_column(String(255), default="")
+    password: Mapped[str] = mapped_column(Text, default="")  # encrypted
+    auth_method: Mapped[str] = mapped_column(String(10), default="password")  # scp: password | key
+    host_key: Mapped[str] = mapped_column(String(128), default="")  # scp: pinned on first connection
+    remote_path: Mapped[str] = mapped_column(String(500), default="")  # folder on the server
+    filename: Mapped[str] = mapped_column(String(255), default="")
+    ftps_implicit: Mapped[bool] = mapped_column(Boolean, default=False)
+    verify_tls: Mapped[bool] = mapped_column(Boolean, default=True)
+    passive: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Same column mapping and defaults as the CSV wizard.
+    mapping: Mapped[dict] = mapped_column(JSON, default=dict)
+    defaults: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Only rows of these locations / departments; empty = all.
+    filter_locations: Mapped[list] = mapped_column(JSON, default=list)
+    filter_departments: Mapped[list] = mapped_column(JSON, default=list)
+    console_ids: Mapped[list | None] = mapped_column(JSON, nullable=True)  # None = all active consoles
+    mode: Mapped[str] = mapped_column(String(10), default="upsert")  # upsert | full
+    # Full sync stops without changes when it would remove more vehicles than this (0 = no limit).
+    max_remove: Mapped[int] = mapped_column(Integer, default=25)
+    # Skip the run when the file is the same as last time.
+    skip_unchanged: Mapped[bool] = mapped_column(Boolean, default=True)
+    schedule: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_status: Mapped[str] = mapped_column(String(20), default="")  # "" | ok | unchanged | failed
+    last_message: Mapped[str] = mapped_column(Text, default="")
+    last_hash: Mapped[str] = mapped_column(String(64), default="")
+    last_job_id: Mapped[int | None] = mapped_column(Integer, nullable=True)

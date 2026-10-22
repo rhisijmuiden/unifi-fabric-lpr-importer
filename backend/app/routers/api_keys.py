@@ -1,4 +1,5 @@
 import ipaddress
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
@@ -10,6 +11,7 @@ from ..deps import require_admin
 from ..models import ApiKey, User
 from ..schemas import AccessSettingsIn, ApiKeyIn, ApiKeyOut, ApiKeyUpdate
 from ..security import new_api_key
+from ..services import scheduler
 from ..settings_store import get_section, update_section
 
 router = APIRouter(prefix="/api", tags=["api keys"])
@@ -75,11 +77,18 @@ def delete_key(key_id: int, request: Request, db: Session = Depends(get_db), adm
 
 @router.get("/settings/access")
 def get_access(db: Session = Depends(get_db), _: User = Depends(require_admin)) -> dict:
-    return get_section(db, "access")
+    return _access(db)
+
+
+def _access(db: Session) -> dict:
+    data = get_section(db, "access")
+    scan = data.get("scan_schedule") or {}
+    data["next_scan"] = scheduler.next_slot(scan, datetime.now()).isoformat() if scan.get("enabled") else None
+    return data
 
 
 @router.put("/settings/access")
 def put_access(body: AccessSettingsIn, request: Request, db: Session = Depends(get_db), admin: User = Depends(require_admin)) -> dict:
-    update_section(db, "access", body.model_dump())
-    audit.record(db, "settings.access_updated", user=admin, details=body.model_dump(), request=request)
-    return get_section(db, "access")
+    update_section(db, "access", body.model_dump(exclude_none=True))
+    audit.record(db, "settings.access_updated", user=admin, details=body.model_dump(exclude_none=True), request=request)
+    return _access(db)

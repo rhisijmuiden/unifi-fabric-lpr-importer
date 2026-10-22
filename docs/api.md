@@ -30,8 +30,11 @@ Authorization: Bearer lpr_...
   `10.20.0.0/16`). Requests from other addresses get `403 ip_not_allowed`. Give the administrator the public IP
   address(es) your system connects from.
 - The application listens on port 8080. When the traffic crosses the internet, connect only through HTTPS
-  (reverse proxy) or a VPN; the administrator gives you the address to use. The key is a password: keep it out
-  of logs and source code.
+  (the installer can enable HTTPS on port 8080, or a reverse proxy is used) or a VPN; the administrator gives you
+  the address to use. The key is a password: keep it out of logs and source code.
+- Each key may make a limited number of requests per minute (default 600). Above that the API answers
+  `429 too_many_requests` with a `Retry-After` header in seconds. An address that sends more than 30 wrong keys in a
+  minute is paused for a minute in the same way.
 
 ## Vehicle fields
 
@@ -140,6 +143,7 @@ Errors are JSON with a `detail` field.
 | 403 | `delete_not_allowed` | The key may not remove vehicles |
 | 404 | `not_found` | Vehicle or job not found |
 | 422 | (list) | The request body does not match the schema, e.g. more than 20,000 vehicles |
+| 429 | `too_many_requests` | Rate limit reached; retry after the number of seconds in `Retry-After` |
 
 ## Examples
 

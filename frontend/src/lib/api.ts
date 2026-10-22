@@ -276,3 +276,110 @@ export interface BackupItem {
   restorable: boolean;
   chain_length: number;
 }
+
+export interface ImportSchedule {
+  id: number;
+  name: string;
+  is_enabled: boolean;
+  protocol: "url" | "scp" | "ftps" | "ftp";
+  url: string;
+  host: string;
+  port: number;
+  username: string;
+  password_set: boolean;
+  auth_method: "password" | "key";
+  host_key: string;
+  remote_path: string;
+  filename: string;
+  ftps_implicit: boolean;
+  verify_tls: boolean;
+  passive: boolean;
+  mapping: Partial<Record<ImportField, string>>;
+  defaults: Partial<Record<ImportField, string>>;
+  filter_locations: string[];
+  filter_departments: string[];
+  console_ids: number[] | null;
+  mode: "upsert" | "full";
+  max_remove: number;
+  skip_unchanged: boolean;
+  schedule: BackupSchedule;
+  next_run: string | null;
+  last_run_at: string | null;
+  last_status: "" | "ok" | "unchanged" | "failed";
+  last_message: string;
+  last_job_id: number | null;
+}
+
+export interface ImportScheduleTest {
+  ok: boolean;
+  code?: string;
+  message?: string;
+  bytes?: number;
+  headers?: string[];
+  sample?: Record<string, string>[];
+  suggested?: Partial<Record<ImportField, string>>;
+  host_key?: string;
+  missing_columns?: string[];
+  summary?: ImportPlan["summary"];
+  consoles?: ImportPlan["consoles"];
+  remove?: string[];
+}
+
+export type LocationStatus = "ok" | "warning" | "error" | "unknown" | "inactive";
+
+export interface DashboardLocation {
+  id: number;
+  name: string;
+  location: string;
+  is_active: boolean;
+  status: LocationStatus;
+  reachable: boolean | null;
+  last_test_at: string | null;
+  last_scan_at: string | null;
+  scan_error: string;
+  present: number;
+  missing: number;
+  unmanaged: number;
+  changes_7d: number;
+  failures_24h: number;
+  last_change_at: string | null;
+  last_failure_at: string | null;
+  last_failure: string;
+}
+
+export interface DashboardSync extends Job {
+  source: string;
+  schedule: string;
+  mode: string;
+}
+
+export interface Dashboard {
+  vehicles: number;
+  locations: DashboardLocation[];
+  syncs: DashboardSync[];
+  schedules: Pick<ImportSchedule, "id" | "name" | "is_enabled" | "mode" | "next_run" | "last_run_at" | "last_status" | "last_message">[];
+  backup: { targets: number; failed: number; last_backup_at: string | null };
+}
+
+export interface SessionInfo {
+  id: string;
+  user_id: number;
+  username: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  ip_address: string;
+  user_agent: string;
+  current: boolean;
+}
+
+export interface SecuritySettings {
+  session_hours: number;
+  idle_minutes: number;
+  login_max_attempts: number;
+  login_lock_minutes: number;
+  api_requests_per_minute: number;
+  https: boolean;
+  cookie_secure: boolean;
+  secret_key_ok: boolean;
+}

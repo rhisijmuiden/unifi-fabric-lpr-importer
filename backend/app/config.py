@@ -19,7 +19,6 @@ class Settings(BaseSettings):
     # Public URL of the app, used for SSO redirects and links in mail.
     base_url: str = "http://localhost:8080"
     cookie_secure: bool = False
-    session_hours: int = 12
 
     repo_dir: Path = REPO_ROOT
     state_dir: Path = Path("/var/lib/lpr-importer")
@@ -32,6 +31,11 @@ class Settings(BaseSettings):
     jobs_inline: bool = False
     # Run scheduled backups in the background (off in tests).
     scheduler: bool = True
+
+    @property
+    def secret_key_ok(self) -> bool:
+        """The secret key encrypts stored passwords and tokens: it must be long and not the example value."""
+        return self.secret_key != "change-me" and len(self.secret_key) >= 32
 
 
 @lru_cache

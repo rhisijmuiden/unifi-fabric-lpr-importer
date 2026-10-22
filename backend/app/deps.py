@@ -8,7 +8,11 @@ from .audit import client_ip
 from .db import get_db
 from .models import ApiKey, User
 from .security import SESSION_COOKIE, resolve_api_key, resolve_session
+from .services import ratelimit
 from .services.jobs import Actor
+from .settings_store import get_section
+
+INVALID_KEYS_PER_MINUTE = 30
 
 
 def current_user(request: Request, db: Session = Depends(get_db)) -> User:
@@ -39,13 +43,23 @@ def user_actor(user: User, request: Request) -> Actor:
 
 def api_key(request: Request, db: Session = Depends(get_db)) -> ApiKey:
     """Authenticate an external system by `Authorization: Bearer lpr_...`."""
+    ip = client_ip(request)
+    bad_key = f"api-invalid:{ip}"
+    # An address that keeps sending wrong keys is paused for a minute.
+    if ratelimit.count(bad_key, 60) >= INVALID_KEYS_PER_MINUTE:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "too_many_requests", headers={"Retry-After": str(ratelimit.retry_after(bad_key, 60))})
     header = request.headers.get("authorization", "")
     scheme, _, token = header.partition(" ")
     key = resolve_api_key(db, token.strip()) if scheme.lower() == "bearer" else None
     if key is None:
+        ratelimit.hit(bad_key, 60)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid_api_key", headers={"WWW-Authenticate": "Bearer"})
-    if key.allowed_ips and not ip_allowed(client_ip(request), key.allowed_ips):
+    if key.allowed_ips and not ip_allowed(ip, key.allowed_ips):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "ip_not_allowed")
+    limit = int(get_section(db, "security")["api_requests_per_minute"])
+    rate_key = f"api-key:{key.id}"
+    if ratelimit.hit(rate_key, 60) > limit:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "too_many_requests", headers={"Retry-After": str(ratelimit.retry_after(rate_key, 60))})
     return key
 
 
