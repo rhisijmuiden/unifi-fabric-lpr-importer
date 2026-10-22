@@ -1,0 +1,22 @@
+[Unit]
+Description=UniFi Fabric License Plate Importer
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=lprimporter
+Group=lprimporter
+WorkingDirectory=/opt/lpr-importer/backend
+EnvironmentFile=/etc/lpr-importer/lpr-importer.env
+# One worker: SSO sign-in state is kept in memory.
+ExecStart=/opt/lpr-importer/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8080 --proxy-headers --workers 1
+Restart=on-failure
+RestartSec=3
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/lpr-importer /var/lib/lpr-importer
+
+[Install]
+WantedBy=multi-user.target
