@@ -2,16 +2,18 @@
 
 Living version with comments: https://claude.ai/artifact/4DLNJHm272aJB5THzPhRRx
 
-Target platform: Debian 13, UniFi Protect 7.3, 3 locations in one UniFi Fabric.
+Target platform: Debian 13, UniFi Protect 7.3, UniFi Access 3.3.10+, 3 locations in one UniFi Fabric.
+
+Integration: the official cloud APIs (Protect, Site Manager, Network) have no vehicle or license plate endpoints. Plates are linked to users through the local UniFi Access API on each console (HTTPS port 12445, Bearer token per console); Access 3.3.10+ supports assigning and unassigning license plates to users.
 Stack: Python 3.13 + FastAPI, PostgreSQL 17 + Alembic, React + Vite + Tailwind + shadcn/ui, react-i18next, systemd, port 8080.
 
 Each phase ends with a release on `test`; after approval it is merged into `main`.
 
 ## Phase 0 – Foundation and proof of concept
 - [x] Git repository with `main` (production) and `test` branches
-- [ ] Proof of concept: register and remove one vehicle in the Fabric through the Fabric API, verify recognition at all 3 locations
-- [ ] Minimum version: UniFi Protect 7.3
-- **Gate:** registering vehicles through the Fabric API works
+- [ ] Proof of concept: create one Access user (vehicle), assign and unassign a license plate through the Access API, verify the gate opens
+- [ ] Minimum versions: UniFi Protect 7.3, UniFi Access 3.3.10
+- **Gate:** assigning plates through the Access API works
 
 ## Phase 1 – Base platform
 - [ ] Debian 13 installer (`install.sh`): packages, PostgreSQL, system user, systemd, port 8080
@@ -22,7 +24,7 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [ ] Update from the UI and switch between production and test (automatic backup before update)
 
 ## Phase 2 – Vehicle import
-- [ ] Fabric connection: Site Manager API key, connection test, list locations and consoles
+- [ ] Console management: address and Access API token per location, connection test, Access version check
 - [ ] CSV import (and XLSX) with column mapping, validation, duplicates and preview
 - [ ] REST API with API keys for Lobster and other systems, OpenAPI docs and an integration guide (EN/NL)
 - [ ] Dry-run showing the changes per location
