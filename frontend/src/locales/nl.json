@@ -17,7 +17,8 @@
     "system": "Systeem & updates",
     "audit": "Auditlog",
     "apiKeys": "API-keys",
-    "backup": "Back-up & herstel"
+    "backup": "Back-up & herstel",
+    "notifications": "Meldingen"
   },
   "common": {
     "save": "Opslaan",
@@ -424,7 +425,8 @@
       "duplicate": "Dubbel",
       "empty_file": "Het bestand is leeg.",
       "too_many_rows": "Het bestand heeft meer dan 20.000 regels.",
-      "file_too_large": "Het bestand is groter dan 10 MB."
+      "file_too_large": "Het bestand is groter dan 10 MB.",
+      "too_long": "Waarde te lang"
     },
     "groups": "Groepen",
     "noGroup": "Geen groep",
@@ -513,8 +515,14 @@
     "openDocs": "Open de interactieve API-documentatie",
     "guide": "De koppelhandleiding voor de leverancier staat in docs/api.md (Engels) en docs/api.nl.md (Nederlands) in de repository.",
     "errors": {
-      "name_taken": "Er bestaat al een key met deze naam."
-    }
+      "name_taken": "Er bestaat al een key met deze naam.",
+      "invalid_network": "Een van de adressen is geen geldig IP-adres of netwerk."
+    },
+    "networks": "Toegestane adressen",
+    "networksHint": "IP-adressen of netwerken (CIDR) waarvandaan de key gebruikt mag worden, gescheiden door komma's. Leeg = elk adres.",
+    "networksFor": "Toegestane adressen voor {{name}}",
+    "anyAddress": "Elk adres",
+    "_err": "Een van de adressen is geen geldig IP-adres of netwerk."
   },
   "backup": {
     "title": "Back-up & herstel",
@@ -676,6 +684,28 @@
       "confirm_required": "Bevestig eerst het herstellen.",
       "invalid_file": "Dit is geen back-upbestand van deze applicatie (.lprbak).",
       "too_large": "De bestanden zijn te groot om te uploaden."
+    }
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "description": "Mails over imports, mislukte wijzigingen op de consoles en nieuwe versies.",
+    "recipients": "Ontvangers",
+    "recipientsHint": "Scheid meerdere adressen met komma's. Mails gaan via de mailserver die onder Mailserver is ingesteld.",
+    "events": "Wat mailen",
+    "importReport": "Importrapport",
+    "importReportHint": "Na elke CSV-import en elke levering via de REST API (Lobster).",
+    "onProblems": "Alleen als er iets misging",
+    "always": "Na elke import",
+    "never": "Nooit",
+    "syncFailure": "Mislukte synchronisatie",
+    "syncFailureHint": "Kentekens registreren of verwijderen op een console is mislukt.",
+    "updateAvailable": "Beschikbare update",
+    "updateAvailableHint": "Elke zes uur gecontroleerd op het geïnstalleerde kanaal; één mail per nieuwe versie.",
+    "test": "Testmelding versturen",
+    "testHint": "Stuurt een testmail naar de opgeslagen ontvangers. Sla eerst op. Serverinstellingen:",
+    "errors": {
+      "invalid_address": "Een van de ontvangers is geen geldig mailadres.",
+      "no_recipients": "Sla eerst minstens één ontvanger op."
     }
   }
 }

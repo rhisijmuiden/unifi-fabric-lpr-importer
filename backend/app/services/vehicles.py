@@ -16,6 +16,8 @@ from .jobs import Actor, JobContext
 from .plates import format_plate, group_name, is_valid_plate, plate_key
 
 FIELDS = ("plate", "department", "location", "group_name", "description")
+# Column sizes in the database; longer values are refused per row instead of failing the whole job.
+MAX_LENGTH = {"department": 100, "location": 100, "group_name": 200}
 
 
 def normalize(raw: dict[str, Any]) -> dict[str, Any]:
@@ -36,6 +38,8 @@ def normalize(raw: dict[str, Any]) -> dict[str, Any]:
         row["error"] = "invalid_plate"
     elif not department:
         row["error"] = "missing_department"
+    elif any(len(row[f]) > n for f, n in MAX_LENGTH.items()):
+        row["error"] = "too_long"
     return row
 
 

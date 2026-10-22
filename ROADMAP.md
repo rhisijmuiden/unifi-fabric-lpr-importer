@@ -50,9 +50,11 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 
 ## Phase 4 – API integration (Lobster)
 - [x] REST API with API keys, same conversion and batch path as the CSV import (built in phase 2)
-- [x] OpenAPI docs and an integration guide (EN/NL): `docs/api.md`, `docs/api.nl.md`
+- [x] OpenAPI docs and an integration guide (EN/NL): `docs/api.md`, `docs/api.nl.md`, published spec `docs/openapi-v1.json`
+- [x] Hardening: connection test (`GET /api/v1/status`), `Idempotency-Key` for safe retries, IP allowlist per API key, one console job at a time, per-row length checks
+- [x] Lookup of one vehicle and filters by department and location
+- [x] Mail notifications: import report, failed sync, available update (Administration › Notifications)
 - [ ] Live test with Lobster
-- [ ] Mail notifications: import report, failed sync, available update
 
 ## Phase 5 – v1.0
 - [ ] Scheduled imports

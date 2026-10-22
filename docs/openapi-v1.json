@@ -1,0 +1,822 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UniFi Fabric License Plate Importer: vehicle delivery API",
+    "version": "1",
+    "description": "REST API for systems such as Lobster that deliver company vehicles. Guide: docs/api.md (EN), docs/api.nl.md (NL)."
+  },
+  "components": {
+    "schemas": {
+      "ApiConsoleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "location"
+        ],
+        "title": "ApiConsoleOut"
+      },
+      "ApiJobAccepted": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "examples": [
+              "queued"
+            ]
+          },
+          "status_url": {
+            "type": "string",
+            "title": "Status Url",
+            "examples": [
+              "/api/v1/jobs/42"
+            ]
+          },
+          "replayed": {
+            "type": "boolean",
+            "title": "Replayed",
+            "description": "True when an earlier request with the same Idempotency-Key started this job.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "status_url"
+        ],
+        "title": "ApiJobAccepted"
+      },
+      "ApiJobLogEntry": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "title": "At"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at",
+          "ok",
+          "message"
+        ],
+        "title": "ApiJobLogEntry"
+      },
+      "ApiJobOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor",
+            "description": "Name of the API key that started the job."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "queued, running, done or failed."
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "succeeded": {
+            "type": "integer",
+            "title": "Succeeded"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "log": {
+            "items": {
+              "$ref": "#/components/schemas/ApiJobLogEntry"
+            },
+            "type": "array",
+            "title": "Log",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "actor",
+          "status",
+          "total",
+          "processed",
+          "succeeded",
+          "failed",
+          "result",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "ApiJobOut"
+      },
+      "ApiStatusOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "examples": [
+              "ok"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Name of the API key used."
+          },
+          "allow_delete": {
+            "type": "boolean",
+            "title": "Allow Delete"
+          },
+          "consoles": {
+            "type": "integer",
+            "title": "Consoles",
+            "description": "Number of active consoles."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "key",
+          "allow_delete",
+          "consoles"
+        ],
+        "title": "ApiStatusOut"
+      },
+      "ApiVehicleIn": {
+        "properties": {
+          "plate": {
+            "type": "string",
+            "title": "Plate",
+            "description": "Required. License plate in any notation, e.g. `12-BDF-3` or `12bdf3`.",
+            "default": "",
+            "examples": [
+              "12-BDF-3"
+            ]
+          },
+          "department": {
+            "type": "string",
+            "title": "Department",
+            "description": "Required. Department; becomes the first name of the UniFi Access user.",
+            "default": "",
+            "examples": [
+              "Netwerktransport"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "Location (standplaats).",
+            "default": "",
+            "examples": [
+              "Wognum"
+            ]
+          },
+          "group_name": {
+            "type": "string",
+            "title": "Group Name",
+            "description": "UniFi Access user group. Default: department + location.",
+            "default": ""
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Free text, e.g. make and type. Cut off after 255 characters.",
+            "default": "",
+            "examples": [
+              "DAF XF"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ApiVehicleIn"
+      },
+      "ApiVehicleOut": {
+        "properties": {
+          "plate": {
+            "type": "string",
+            "title": "Plate",
+            "examples": [
+              "12-BDF-3"
+            ]
+          },
+          "department": {
+            "type": "string",
+            "title": "Department"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Where the vehicle came from: api, csv, manual or console."
+          },
+          "consoles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Consoles",
+            "description": "Names of the consoles the plate is present on."
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plate",
+          "department",
+          "location",
+          "group",
+          "description",
+          "source",
+          "consoles",
+          "updated_at"
+        ],
+        "title": "ApiVehicleOut"
+      },
+      "ApiVehiclesIn": {
+        "properties": {
+          "vehicles": {
+            "items": {
+              "$ref": "#/components/schemas/ApiVehicleIn"
+            },
+            "type": "array",
+            "maxItems": 20000,
+            "minItems": 1,
+            "title": "Vehicles"
+          },
+          "mode": {
+            "type": "string",
+            "pattern": "^(upsert|full)$",
+            "title": "Mode",
+            "description": "`upsert` adds and updates only. `full` also removes vehicles of the same departments that are missing from the list.",
+            "default": "upsert"
+          },
+          "consoles": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consoles",
+            "description": "Console ids or names to register on. Omitted = all active consoles, `[]` = store in the app only."
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "description": "Return what would change without changing anything.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicles"
+        ],
+        "title": "ApiVehiclesIn",
+        "description": "Vehicles pushed by an external system such as Lobster."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key `lpr_...` from Administration > API keys"
+      }
+    }
+  },
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/api/v1/status": {
+      "get": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Api Status",
+        "description": "Connection test: checks the key and returns its rights and the application version.",
+        "operationId": "api_status_api_v1_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiStatusOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          }
+        }
+      }
+    },
+    "/api/v1/consoles": {
+      "get": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Consoles",
+        "description": "Active consoles that vehicles can be registered on.",
+        "operationId": "consoles_api_v1_consoles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApiConsoleOut"
+                  },
+                  "type": "array",
+                  "title": "Response Consoles Api V1 Consoles Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles": {
+      "get": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "List Vehicles",
+        "description": "All vehicles with the consoles they are present on, optionally filtered by department and location.",
+        "operationId": "list_vehicles_api_v1_vehicles_get",
+        "parameters": [
+          {
+            "name": "department",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Department"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Location"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiVehicleOut"
+                  },
+                  "title": "Response List Vehicles Api V1 Vehicles Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Push Vehicles",
+        "description": "Add or update vehicles and register them on the consoles. With dry_run only the plan is returned.",
+        "operationId": "push_vehicles_api_v1_vehicles_post",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Any unique value per delivery, e.g. a UUID. A retry with the same value within 24 hours returns the original job instead of starting a new one.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Any unique value per delivery, e.g. a UUID. A retry with the same value within 24 hours returns the original job instead of starting a new one."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiVehiclesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJobAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "200": {
+            "description": "Dry run: the plan, nothing changed. Or a replay of an earlier request with the same Idempotency-Key."
+          },
+          "400": {
+            "description": "`unknown_console:<name>`"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vehicles/{plate}": {
+      "get": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Get Vehicle",
+        "description": "One vehicle, by plate in any notation.",
+        "operationId": "get_vehicle_api_v1_vehicles__plate__get",
+        "parameters": [
+          {
+            "name": "plate",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiVehicleOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "404": {
+            "description": "`not_found`"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Delete Vehicle",
+        "description": "Remove the plate from every console and delete the vehicle from the app.",
+        "operationId": "delete_vehicle_api_v1_vehicles__plate__delete",
+        "parameters": [
+          {
+            "name": "plate",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plate"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJobAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "404": {
+            "description": "`not_found`"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "external API (v1)"
+        ],
+        "summary": "Get Job",
+        "description": "Progress and report of a job started with this key.",
+        "operationId": "get_job_api_v1_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiJobOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_api_key`: key missing, wrong or disabled"
+          },
+          "403": {
+            "description": "`ip_not_allowed` or `delete_not_allowed`"
+          },
+          "404": {
+            "description": "`not_found`"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

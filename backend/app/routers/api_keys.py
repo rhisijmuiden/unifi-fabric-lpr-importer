@@ -1,3 +1,5 @@
+import ipaddress
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,6 +15,21 @@ from ..settings_store import get_section, update_section
 router = APIRouter(prefix="/api", tags=["api keys"])
 
 
+def _networks(values: list[str]) -> list[str]:
+    """Normalise IP addresses and networks, e.g. `10.0.0.1/8` becomes `10.0.0.0/8`."""
+    cleaned = []
+    for value in (v.strip() for v in values):
+        if not value:
+            continue
+        try:
+            network = ipaddress.ip_network(value, strict=False)
+            # A single address is shown without /32 or /128.
+            cleaned.append(str(network.network_address) if network.num_addresses == 1 else str(network))
+        except ValueError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"invalid_network:{value}") from exc
+    return cleaned
+
+
 @router.get("/api-keys", response_model=list[ApiKeyOut])
 def list_keys(db: Session = Depends(get_db), _: User = Depends(require_admin)) -> list[ApiKey]:
     return list(db.scalars(select(ApiKey).order_by(ApiKey.name)))
@@ -24,10 +41,10 @@ def create_key(body: ApiKeyIn, request: Request, db: Session = Depends(get_db), 
     if db.scalar(select(ApiKey).where(ApiKey.name == body.name.strip())):
         raise HTTPException(status.HTTP_409_CONFLICT, "name_taken")
     key, prefix, key_hash = new_api_key()
-    row = ApiKey(name=body.name.strip(), prefix=prefix, key_hash=key_hash, allow_delete=body.allow_delete, created_by=admin.username)
+    row = ApiKey(name=body.name.strip(), prefix=prefix, key_hash=key_hash, allow_delete=body.allow_delete, allowed_ips=_networks(body.allowed_ips), created_by=admin.username)
     db.add(row)
     db.commit()
-    audit.record(db, "api_key.created", user=admin, target=row.name, details={"allow_delete": row.allow_delete}, request=request)
+    audit.record(db, "api_key.created", user=admin, target=row.name, details={"allow_delete": row.allow_delete, "allowed_ips": row.allowed_ips}, request=request)
     return {**ApiKeyOut.model_validate(row).model_dump(mode="json"), "key": key}
 
 
@@ -37,6 +54,8 @@ def update_key(key_id: int, body: ApiKeyUpdate, request: Request, db: Session = 
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "not_found")
     changes = body.model_dump(exclude_unset=True)
+    if changes.get("allowed_ips") is not None:
+        changes["allowed_ips"] = _networks(changes["allowed_ips"])
     for field, value in changes.items():
         setattr(row, field, value)
     db.commit()

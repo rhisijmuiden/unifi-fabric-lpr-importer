@@ -16,10 +16,16 @@ from sqlalchemy.orm import Session
 from .. import db as app_db
 from ..config import get_settings
 from ..models import Job
+from . import notify
 
 log = logging.getLogger(__name__)
 
 MAX_LOG = 2000
+
+# Jobs that change the consoles run one at a time, so two imports never create
+# the same Access user or group twice. Later jobs wait in the "queued" state.
+CONSOLE_KINDS = {"scan", "assign", "remove", "import"}
+_console_lock = threading.Lock()
 
 
 @dataclass
@@ -62,9 +68,9 @@ class JobContext:
 JobFn = Callable[[JobContext], dict[str, Any] | None]
 
 
-def start(db: Session, kind: str, actor: Actor, params: dict[str, Any], fn: JobFn, inline: bool = False) -> Job:
+def start(db: Session, kind: str, actor: Actor, params: dict[str, Any], fn: JobFn, inline: bool = False, idempotency_key: str | None = None) -> Job:
     """Run fn as a job in a worker thread, or right away when `inline` (command line)."""
-    job = Job(kind=kind, actor_type=actor.type, actor=actor.name, params=params)
+    job = Job(kind=kind, actor_type=actor.type, actor=actor.name, params=params, idempotency_key=idempotency_key)
     db.add(job)
     db.commit()
     if inline or get_settings().jobs_inline:
@@ -77,9 +83,13 @@ def start(db: Session, kind: str, actor: Actor, params: dict[str, Any], fn: JobF
 
 def _run(job_id: int, actor: Actor, fn: JobFn) -> None:
     db = next(app_db.get_db())
+    lock = None
     try:
         job = db.get(Job, job_id)
         assert job is not None
+        if job.kind in CONSOLE_KINDS:
+            lock = _console_lock
+            lock.acquire()
         job.status = "running"
         db.commit()
         ctx = JobContext(db, job, actor)
@@ -95,7 +105,13 @@ def _run(job_id: int, actor: Actor, fn: JobFn) -> None:
             job.log = [*job.log, {"at": datetime.now(timezone.utc).isoformat(), "ok": False, "message": str(exc)}]
         job.finished_at = datetime.now(timezone.utc)
         db.commit()
+        if lock is not None:
+            lock.release()
+            lock = None
+        notify.job_finished(db, job)
     finally:
+        if lock is not None:
+            lock.release()
         db.close()
 
 
