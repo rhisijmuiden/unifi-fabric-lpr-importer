@@ -27,7 +27,7 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [ ] REST API with API keys for Lobster and other systems, OpenAPI docs and an integration guide (EN/NL)
 - [ ] Dry-run showing the changes per location
 - [ ] Full sync: vehicles missing from the source are removed
-- [ ] Central vehicle overview with search, filters, labels and expiry date
+- [ ] Vehicle overview: list of all known plates with one column per console showing present / not present (read live), plus search, filters, labels and expiry date; re-sync a missing plate from the list
 - [ ] Audit log
 
 ## Phase 3 – SSO and mail
