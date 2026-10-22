@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     access_mock: str = ""
     # Run background jobs in the request instead of a thread (tests).
     jobs_inline: bool = False
+    # Run scheduled backups in the background (off in tests).
+    scheduler: bool = True
 
 
 @lru_cache

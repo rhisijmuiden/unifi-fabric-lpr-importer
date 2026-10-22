@@ -64,18 +64,19 @@ def delete_session(db: Session, token: str | None) -> None:
         db.commit()
 
 
-def _fernet() -> Fernet:
-    digest = hashlib.sha256(("lpr-secrets:" + get_settings().secret_key).encode()).digest()
+def _fernet(secret_key: str | None = None) -> Fernet:
+    digest = hashlib.sha256(("lpr-secrets:" + (secret_key or get_settings().secret_key)).encode()).digest()
     return Fernet(base64.urlsafe_b64encode(digest))
 
 
-def encrypt(value: str) -> str:
-    return _fernet().encrypt(value.encode()).decode()
+def encrypt(value: str, secret_key: str | None = None) -> str:
+    return _fernet(secret_key).encrypt(value.encode()).decode()
 
 
-def decrypt(value: str) -> str | None:
+def decrypt(value: str, secret_key: str | None = None) -> str | None:
+    """Decrypt with the app's secret key, or another one (restoring a backup from another server)."""
     try:
-        return _fernet().decrypt(value.encode()).decode()
+        return _fernet(secret_key).decrypt(value.encode()).decode()
     except InvalidToken:
         return None
 

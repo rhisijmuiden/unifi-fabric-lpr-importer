@@ -10,3 +10,4 @@ cryptography==50.0.2
 pwdlib[argon2]==0.3.1
 httpx==0.28.1
 python-multipart==0.0.32
+paramiko==5.1.0

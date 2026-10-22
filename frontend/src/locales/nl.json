@@ -16,7 +16,8 @@
     "mail": "Mailserver",
     "system": "Systeem & updates",
     "audit": "Auditlog",
-    "apiKeys": "API-keys"
+    "apiKeys": "API-keys",
+    "backup": "Back-up & herstel"
   },
   "common": {
     "save": "Opslaan",
@@ -222,7 +223,9 @@
       "scan": "Consoles uitlezen",
       "assign": "Toewijzen aan consoles",
       "remove": "Verwijderen van consoles",
-      "import": "Importeren"
+      "import": "Importeren",
+      "backup": "Back-up",
+      "restore": "Herstellen"
     },
     "status": {
       "queued": "In de wachtrij",
@@ -511,6 +514,168 @@
     "guide": "De koppelhandleiding voor de leverancier staat in docs/api.md (Engels) en docs/api.nl.md (Nederlands) in de repository.",
     "errors": {
       "name_taken": "Er bestaat al een key met deze naam."
+    }
+  },
+  "backup": {
+    "title": "Back-up & herstel",
+    "description": "Versleutelde volledige en incrementele back-ups naar je eigen servers, en herstellen daaruit.",
+    "runIncremental": "Nu incrementele back-up",
+    "runFull": "Nu volledige back-up",
+    "needPassphrase": "Stel een back-upwachtzin in en voeg een back-uplocatie toe voor de eerste back-up.",
+    "targets": "Back-uplocaties",
+    "targetsHint": "Elke back-up gaat naar iedere actieve locatie.",
+    "addTarget": "Locatie toevoegen",
+    "noTargets": "Nog geen back-uplocatie. Voeg een server toe die bereikbaar is via SCP (SSH), FTPS of FTP.",
+    "protocols": {
+      "scp": "SCP (SSH)",
+      "ftps": "FTPS",
+      "ftp": "FTP"
+    },
+    "statusOk": "Laatste back-up gelukt",
+    "statusFailed": "Laatste back-up mislukt",
+    "statusNone": "Nog geen back-up",
+    "lastBackup": "Laatste back-up",
+    "browse": "Back-ups",
+    "confirmDelete": "Locatie {{name}} verwijderen? De back-ups op die server blijven staan.",
+    "howTitle": "Zo werkt het",
+    "how": [
+      "Een volledige back-up bevat alle voertuigen, consoles, gebruikers, instellingen, API-keys en het auditlog.",
+      "Een incrementele back-up bevat alleen wat er sinds de vorige back-up op die locatie veranderd is, dus klein en snel.",
+      "Elke back-up wordt met AES-256 en jouw wachtzin versleuteld voordat hij deze server verlaat.",
+      "Bij het herstellen van een incrementele back-up worden de volledige back-up en de incrementele back-ups daartussen automatisch gebruikt.",
+      "Op een nieuwe server: installeer met install.sh --restore, of voeg hier de locatie toe en herstel uit de lijst."
+    ],
+    "uploadTitle": "Herstellen uit een bestand",
+    "uploadHint": "Upload een back-upbestand vanaf je computer: een volledige back-up, of een volledige back-up samen met de incrementele back-ups.",
+    "chooseFiles": "Kies .lprbak-bestanden",
+    "restore": "Herstellen",
+    "restoreTitle": "{{name}} herstellen",
+    "restoreWarning": "Alle huidige gegevens van deze applicatie (voertuigen, consoles, gebruikers, instellingen, API-keys, auditlog) worden vervangen door de back-up. Eerst wordt een kopie van de huidige gegevens op deze server bewaard. Op de UniFi-consoles verandert niets.",
+    "restorePassphrase": "Wachtzin van de back-up",
+    "restorePassphraseHint": "Laat leeg als de back-up met de huidige wachtzin gemaakt is.",
+    "restoreUnderstood": "Ik begrijp dat de huidige gegevens vervangen worden.",
+    "backupsOn": "Back-ups op {{name}}",
+    "noBackups": "Geen back-ups gevonden in deze map.",
+    "date": "Datum",
+    "type": "Soort",
+    "size": "Grootte",
+    "kinds": {
+      "full": "Volledig",
+      "incremental": "Incrementeel"
+    },
+    "incomplete": "Onvolledig",
+    "download": "Downloaden",
+    "chainHint": "Een incrementele back-up kan alleen hersteld worden als de volledige back-up en de incrementele back-ups daartussen er nog zijn (anders gemarkeerd als onvolledig).",
+    "encryption": "Versleuteling",
+    "encryptionHint": "De wachtzin versleutelt elke back-up. Zonder wachtzin kan een back-up niet hersteld worden, ook niet door ons.",
+    "notSet": "Niet ingesteld",
+    "passphrase": "Wachtzin",
+    "newPassphrase": "Nieuwe wachtzin",
+    "passphraseHint": "Minstens 12 tekens. Bewaar hem in je wachtwoordmanager: je hebt hem nodig om op een nieuwe server te herstellen.",
+    "passphraseChangeHint": "Laat leeg om de huidige wachtzin te houden. Na een wijziging is de volgende back-up een volledige; oudere back-ups houden hun oude wachtzin.",
+    "generate": "Genereren",
+    "storeSafely": "Bewaar deze wachtzin in je wachtwoordmanager voordat je opslaat.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "scheduleTitle": "Planning",
+    "scheduleHint": "Tijden in de tijdzone van deze server. Een gemiste back-up (server uit) wordt binnen 6 uur ingehaald, anders op het volgende moment.",
+    "schedule": {
+      "full": "Volledige back-up",
+      "fullHint": "Begint een nieuwe reeks. Wekelijks is een goede standaard.",
+      "incremental": "Incrementele back-up",
+      "incrementalHint": "Alleen de wijzigingen sinds de vorige back-up. Dagelijks of elk uur.",
+      "frequency": "Frequentie",
+      "hourly": "Elk uur",
+      "daily": "Elke dag",
+      "weekly": "Elke week",
+      "monthly": "Elke maand",
+      "weekday": "Dag",
+      "monthday": "Dag van de maand",
+      "minute": "Minuut",
+      "time": "Tijd",
+      "next": "Volgende keer: {{date}}"
+    },
+    "retentionTitle": "Bewaren en meldingen",
+    "keepFull": "Volledige back-ups bewaren per locatie",
+    "keepFullHint": "Oudere volledige back-ups worden samen met hun incrementele back-ups van de server verwijderd.",
+    "notifyEmail": "Mail sturen naar",
+    "notifyHint": "Gebruikt de instellingen van de mailserver.",
+    "notifyOn": "Wanneer",
+    "notify": {
+      "failure": "Alleen als een back-up mislukt",
+      "always": "Na elke back-up",
+      "never": "Nooit"
+    },
+    "sshKeyTitle": "SSH-sleutel van deze applicatie",
+    "sshKeyHelp": "Voor SCP-locaties met aanmelden via sleutel: zet deze publieke sleutel in ~/.ssh/authorized_keys van de back-upgebruiker op de server.",
+    "newSshKey": "Nieuwe sleutel",
+    "newSshKeyConfirm": "Een nieuwe SSH-sleutel maken? Locaties die de huidige sleutel gebruiken werken pas weer als de nieuwe publieke sleutel op de server staat.",
+    "targetName": "Naam",
+    "protocol": "Protocol",
+    "ftpWarning": "Gewone FTP stuurt het wachtwoord onversleuteld. Het back-upbestand zelf is altijd versleuteld, maar kies liever SCP of FTPS.",
+    "host": "Server",
+    "port": "Poort",
+    "ftpsMode": "TLS-modus",
+    "ftpsExplicit": "Expliciet (AUTH TLS, meestal poort 21)",
+    "ftpsImplicit": "Impliciet (meestal poort 990)",
+    "username": "Gebruikersnaam",
+    "authMethod": "Aanmelden met",
+    "authKey": "SSH-sleutel van deze applicatie (aangeraden)",
+    "authPassword": "Wachtwoord",
+    "password": "Wachtwoord",
+    "remotePath": "Map op de server",
+    "remotePathHint": "Wordt aangemaakt als hij niet bestaat. Ten opzichte van de thuismap, tenzij hij met / begint.",
+    "verifyTls": "Certificaat van de server controleren",
+    "verifyTlsHint": "Alleen uitzetten bij een zelf-ondertekend certificaat in je eigen netwerk.",
+    "passive": "Passieve modus",
+    "passiveHint": "Nodig achter de meeste firewalls en NAT.",
+    "enabledHint": "Inactieve locaties krijgen geen back-ups, maar je kunt er nog wel uit herstellen.",
+    "test": "Verbinding testen",
+    "testOk_one": "Verbonden en schrijven lukt. {{count}} back-up gevonden.",
+    "testOk_other": "Verbonden en schrijven lukt. {{count}} back-ups gevonden.",
+    "testFailed": "Verbindingstest mislukt",
+    "hostKey": "SSH-hostsleutel",
+    "hostKeyHelp": "Wordt bij de eerste verbinding vertrouwd. Een andere sleutel wordt daarna geweigerd, zodat niemand zich als jouw server kan voordoen.",
+    "forgetHostKey": "Hostsleutel vergeten",
+    "protocolHelp": {
+      "scp": {
+        "title": "SCP (SSH)",
+        "body": "Aangeraden. Werkt met elke Linux-server of NAS met SSH (Synology, QNAP, TrueNAS). Gebruikt SFTP als de server dat aanbiedt, anders klassieke scp."
+      },
+      "ftps": {
+        "title": "FTPS",
+        "body": "FTP over TLS 1.2 of nieuwer. Expliciete TLS is de gangbare keuze; gebruik impliciet voor servers die alleen op poort 990 luisteren."
+      },
+      "ftp": {
+        "title": "FTP",
+        "body": "Alleen voor oude servers. Het back-upbestand is versleuteld, het aanmelden niet."
+      }
+    },
+    "remoteErrors": {
+      "connect_failed": "Kan geen verbinding maken met de server. Controleer het adres, de poort en de firewall.",
+      "login_failed": "De server weigert de gebruikersnaam of het wachtwoord (of de SSH-sleutel).",
+      "tls_verify_failed": "Het certificaat van de server kan niet worden gecontroleerd. Gebruik een geldig certificaat of zet de certificaatcontrole uit bij een zelf-ondertekend certificaat.",
+      "host_key_mismatch": "De SSH-hostsleutel van de server is veranderd sinds hij vertrouwd werd. Is de server bewust vervangen? Vergeet dan de opgeslagen hostsleutel en test opnieuw.",
+      "not_found": "Het bestand of de map bestaat niet op de server.",
+      "transfer_failed": "De overdracht is onderbroken.",
+      "remote_error": "De server meldt een fout.",
+      "invalid_key": "De SSH-sleutel van deze applicatie is onleesbaar. Maak hieronder een nieuwe aan.",
+      "invalid_protocol": "Onbekend protocol."
+    },
+    "errors": {
+      "connect_failed": "Kan geen verbinding maken met de server. Controleer het adres, de poort en de firewall.",
+      "login_failed": "De server weigert de gebruikersnaam of het wachtwoord (of de SSH-sleutel).",
+      "tls_verify_failed": "Het certificaat van de server kan niet worden gecontroleerd. Gebruik een geldig certificaat of zet de certificaatcontrole uit bij een zelf-ondertekend certificaat.",
+      "host_key_mismatch": "De SSH-hostsleutel van de server is veranderd sinds hij vertrouwd werd. Is de server bewust vervangen? Vergeet dan de opgeslagen hostsleutel en test opnieuw.",
+      "not_found": "Niet gevonden.",
+      "transfer_failed": "De overdracht is onderbroken.",
+      "remote_error": "De server meldt een fout.",
+      "invalid_key": "De SSH-sleutel van deze applicatie is onleesbaar. Maak hieronder een nieuwe aan.",
+      "invalid_protocol": "Onbekend protocol.",
+      "name_taken": "Er bestaat al een locatie met deze naam.",
+      "confirm_required": "Bevestig eerst het herstellen.",
+      "invalid_file": "Dit is geen back-upbestand van deze applicatie (.lprbak).",
+      "too_large": "De bestanden zijn te groot om te uploaden."
     }
   }
 }

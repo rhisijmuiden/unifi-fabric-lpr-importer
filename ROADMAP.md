@@ -40,10 +40,13 @@ Each phase ends with a release on `test`; after approval it is merged into `main
 - [ ] Live test against a real console (needs an Access API token)
 
 ## Phase 3 – Backup and restore
-- [ ] Full and incremental backup (database, configuration, files)
-- [ ] Remote targets: FTP, FTPS, SCP; encryption and retention
-- [ ] Schedules per backup type
-- [ ] Restore from remote, also on a fresh server through the installer
+- [x] Full and incremental backup of all data (vehicles, consoles, users, settings, API keys, audit log) and the secret key
+- [x] Remote locations: SCP/SFTP (password or the app's own SSH key, pinned host key), FTPS (explicit/implicit TLS), FTP; several locations at once
+- [x] AES-256-GCM encryption with a passphrase; retention per location (number of full backups with their incrementals)
+- [x] Schedules per backup type (hourly, daily, weekly, monthly) and mail on failure or after every backup
+- [x] Restore from a location or from uploaded files, older backups are migrated to the current schema; a local copy is made first
+- [x] Restore on a fresh server: `install.sh --restore` or `python -m app.cli restore`
+- [ ] Live test against the real backup server
 
 ## Phase 4 – API integration (Lobster)
 - [x] REST API with API keys, same conversion and batch path as the CSV import (built in phase 2)

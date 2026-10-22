@@ -3,6 +3,7 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | sudo bash
 #   sudo bash install.sh --branch test
+#   sudo bash install.sh --restore      # new server: restore a backup from FTP/FTPS/SCP afterwards
 #
 # Safe to run again: existing configuration, database and accounts are kept.
 set -euo pipefail
@@ -15,12 +16,14 @@ STATE_DIR=/var/lib/lpr-importer
 CONF_DIR=/etc/lpr-importer
 ENV_FILE=$CONF_DIR/lpr-importer.env
 PORT=8080
+RESTORE=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --branch) BRANCH="$2"; shift 2 ;;
     --repo) REPO_URL="$2"; shift 2 ;;
-    -h|--help) sed -n '2,8p' "$0"; exit 0 ;;
+    --restore) RESTORE=1; shift ;;
+    -h|--help) sed -n '2,9p' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -92,9 +95,23 @@ systemctl daemon-reload
 systemctl enable --now lpr-importer.service >/dev/null
 systemctl restart lpr-importer.service
 
+app_cli() {
+  (cd "$APP_DIR/backend" && runuser -u "$APP_USER" -- env $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE" | xargs -d '\n') \
+    "$APP_DIR/.venv/bin/python" -m app.cli "$@")
+}
+
+if [[ "$RESTORE" == 1 ]]; then
+  say "Restoring a backup"
+  echo "Enter the backup location and the backup passphrase. Users, settings and vehicles come from the backup."
+  if app_cli restore </dev/tty >/dev/tty 2>&1; then
+    systemctl restart lpr-importer.service
+  else
+    echo "The restore did not finish. Try again later with: sudo bash $APP_DIR/install.sh --restore" >&2
+  fi
+fi
+
 say "Creating the first admin account"
-CREDS=$(cd "$APP_DIR/backend" && runuser -u "$APP_USER" -- env $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE" | xargs -d '\n') \
-  "$APP_DIR/.venv/bin/python" -m app.cli create-admin)
+CREDS=$(app_cli create-admin)
 LPR_BASE_URL=$(grep -E '^LPR_BASE_URL=' "$ENV_FILE" | cut -d= -f2-)
 echo "$CREDS"
 

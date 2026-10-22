@@ -12,7 +12,7 @@ department + location, e.g. `Netwerktransport Wognum`). The vehicle list shows p
 present. An import adds and updates by default; a full sync also removes vehicles of the same departments that the
 source no longer lists. Every add and removal on a console is in the audit log with the user or API key.
 
-> Status: phase 2 (consoles and vehicles). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
+> Status: phase 3 (backup and restore). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
 > [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)).
 
 ## Linking a console
@@ -37,10 +37,36 @@ The installer installs PostgreSQL, Python and Node.js, builds the app into `/opt
 | Path | Contents |
 | --- | --- |
 | `/etc/lpr-importer/lpr-importer.env` | Configuration (database, secret key, public URL) |
-| `/var/lib/lpr-importer/` | Update status, update log, database snapshots made before each update |
+| `/var/lib/lpr-importer/` | Update status, update log, database snapshots made before each update, backup state |
 | `journalctl -u lpr-importer -f` | Application log |
 
 Forgot the admin password? `cd /opt/lpr-importer/backend && sudo -u lprimporter env $(cat /etc/lpr-importer/lpr-importer.env | xargs) ../.venv/bin/python -m app.cli reset-password admin`
+
+## Backup and restore
+
+**Backup & restore** in the admin menu sends encrypted backups to one or more of your own servers over SCP (SSH),
+FTPS or FTP. A full backup holds all data of the application; an incremental backup only what changed since the
+previous backup on that location. Both run on their own schedule, and old backups are removed after the number of
+full backups you keep. Every file is encrypted with AES-256-GCM using the backup passphrase: store it in your password
+manager, because a backup cannot be restored without it.
+
+For SCP, sign in with a password or (recommended) with the application's own SSH key: add the public key shown on the
+page to `~/.ssh/authorized_keys` of the backup user. The server's host key is trusted on the first connection and
+checked after that.
+
+Restore from the list of backups on a location, or upload `.lprbak` files. Restoring an incremental backup uses its
+full backup and the incrementals in between. A copy of the current data is saved in
+`/var/lib/lpr-importer/backup/pre-restore/` first. Nothing changes on the UniFi consoles.
+
+On a new server, install with `--restore` to restore a backup straight away (it asks for the location and the
+passphrase), or run it later:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash -s -- --restore
+cd /opt/lpr-importer/backend && sudo -u lprimporter env $(cat /etc/lpr-importer/lpr-importer.env | xargs) ../.venv/bin/python -m app.cli restore
+```
+
+Passwords and tokens in the backup are re-encrypted with the new server's secret key during the restore.
 
 ## Updates and channels
 

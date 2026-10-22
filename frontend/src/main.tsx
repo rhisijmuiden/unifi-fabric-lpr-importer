@@ -19,6 +19,7 @@ import { VehiclesPage } from "@/pages/Vehicles";
 import { ImportPage } from "@/pages/Import";
 import { StatisticsPage } from "@/pages/Statistics";
 import { ApiKeysPage } from "@/pages/ApiKeys";
+import { BackupPage } from "@/pages/Backup";
 import { setLanguage } from "@/i18n";
 import { useEffect } from "react";
 
@@ -57,6 +58,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="admin/users" element={<RequireAuth roles={["admin"]}><UsersPage /></RequireAuth>} />
             <Route path="admin/sso" element={<RequireAuth roles={["admin"]}><SsoSettingsPage /></RequireAuth>} />
             <Route path="admin/mail" element={<RequireAuth roles={["admin"]}><MailSettingsPage /></RequireAuth>} />
+            <Route path="admin/backup" element={<RequireAuth roles={["admin"]}><BackupPage /></RequireAuth>} />
             <Route path="admin/system" element={<RequireAuth roles={["admin"]}><SystemPage /></RequireAuth>} />
             <Route path="admin/audit" element={<RequireAuth roles={["admin", "operator"]}><AuditPage /></RequireAuth>} />
             <Route path="*" element={<Navigate to="/" replace />} />
