@@ -5,6 +5,7 @@ Web application that registers company vehicles as UniFi Access users with linke
 Vehicles arrive in two ways:
 
 - **CSV import** from the admin panel, with validation, preview and dry-run.
+- **Scheduled imports**: a CSV file fetched on a schedule from a web address or an SCP/SFTP, FTPS or FTP server.
 - **REST API**: external systems such as Lobster push vehicles to this application. API documentation (OpenAPI) is published so vendors can set up the integration themselves.
 
 Each vehicle becomes an Access user named by convention (first name = department, last name = plate, group =
@@ -12,8 +13,9 @@ department + location, e.g. `Netwerktransport Wognum`). The vehicle list shows p
 present. An import adds and updates by default; a full sync also removes vehicles of the same departments that the
 source no longer lists. Every add and removal on a console is in the audit log with the user or API key.
 
-> Status: phase 4 (Lobster REST API and mail notifications). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
-> [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)), OpenAPI file [docs/openapi-v1.json](docs/openapi-v1.json).
+> Version 1.0. **Manual**: [docs/manual.md](docs/manual.md) ([Nederlands](docs/manual.nl.md)). API guide for
+> suppliers: [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)), OpenAPI file
+> [docs/openapi-v1.json](docs/openapi-v1.json). Changes: [CHANGELOG.md](CHANGELOG.md). Plan: [ROADMAP.md](ROADMAP.md).
 
 ## Linking a console
 
@@ -31,12 +33,16 @@ curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-impor
 curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash -s -- --branch test
 ```
 
-The installer installs PostgreSQL, Python and Node.js, builds the app into `/opt/lpr-importer`, starts the
-`lpr-importer` service on port 8080 and prints the first admin password. Running it again is safe.
+The installer is graphical (whiptail): it asks for the channel, HTTP or HTTPS and whether to restore a backup, shows
+which of its 10 steps it is in, and ends with the address and the first admin password. It installs PostgreSQL,
+Python and Node.js, builds the app into `/opt/lpr-importer` and starts the `lpr-importer` service on port 8080.
+Running it again is safe. Options for scripted installs: `--branch main|test`, `--https` (self-signed certificate),
+`--cert FILE --key FILE` (own certificate), `--http`, `--restore`, `--unattended`.
 
 | Path | Contents |
 | --- | --- |
-| `/etc/lpr-importer/lpr-importer.env` | Configuration (database, secret key, public URL) |
+| `/etc/lpr-importer/lpr-importer.env` | Configuration (database, secret key, public URL, HTTPS certificate) |
+| `/etc/lpr-importer/tls/` | HTTPS certificate and key (when HTTPS is on) |
 | `/var/lib/lpr-importer/` | Update status, update log, database snapshots made before each update, backup state |
 | `journalctl -u lpr-importer -f` | Application log |
 
@@ -100,6 +106,8 @@ brand package is `brand/` in the rhis-website repository.
 - Optional Microsoft Entra ID single sign-on
 - Configurable SMTP mail server (STARTTLS/SSL, OAuth2)
 - Mail notifications: import report, failed sync on a console, available update
+- Scheduled imports and automatic console reads; dashboard with the status per location
+- Security: HTTPS on port 8080, rate limiting, session management with idle timeout, encrypted secrets, security headers
 - Full and incremental backups to FTP, FTPS and SCP, with restore from remote
 - Info button with version, update check and in-app update
 - Audit log of every change, with who made it (user or API key)
@@ -116,4 +124,4 @@ brand package is `brand/` in the rhis-website repository.
 
 ## Nederlands
 
-Webapplicatie die bedrijfswagens als UniFi Access-gebruikers met gekoppeld kenteken registreert op elke console, via de lokale UniFi Access API, zodat de slagbomen op alle locaties voor ze opengaan. Voertuigen komen binnen via CSV-import of via de REST API (bijvoorbeeld vanuit Lobster). Zie [ROADMAP.md](ROADMAP.md) voor de planning.
+Webapplicatie die bedrijfswagens als UniFi Access-gebruikers met gekoppeld kenteken registreert op elke console, via de lokale UniFi Access API, zodat de slagbomen op alle locaties voor ze opengaan. Voertuigen komen binnen via CSV-import, geplande imports of de REST API (bijvoorbeeld vanuit Lobster). De volledige handleiding staat in [docs/manual.nl.md](docs/manual.nl.md); installeren gaat met de grafische installer hierboven.

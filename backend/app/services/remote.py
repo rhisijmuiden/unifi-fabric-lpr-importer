@@ -46,6 +46,8 @@ class TargetConfig:
     ftps_implicit: bool = False
     verify_tls: bool = True
     passive: bool = True
+    # Create the remote directory when it is missing (backups); off for reading imports.
+    create_dir: bool = True
 
 
 @dataclass
@@ -127,6 +129,9 @@ class FtpRemote:
                 self.ftp.prot_p()
             self.ftp.set_pasv(cfg.passive)
             self._enter(cfg.remote_path)
+        except RemoteError:
+            self._close_quietly()
+            raise
         except ftplib.error_perm as exc:
             self._close_quietly()
             code = "login_failed" if str(exc).startswith("530") else "remote_error"
@@ -148,6 +153,8 @@ class FtpRemote:
             try:
                 self.ftp.cwd(part)
             except ftplib.error_perm:
+                if not self.cfg.create_dir:
+                    raise RemoteError("not_found", f"Folder {path} not found")
                 self.ftp.mkd(part)
                 self.ftp.cwd(part)
 
@@ -271,6 +278,8 @@ class ScpRemote:
 
     def _prepare_dir(self, path: str) -> str:
         path = (path or ".").strip() or "."
+        if not self.cfg.create_dir:
+            return path
         if self.sftp is not None:
             current = "/" if path.startswith("/") else ""
             for part in [p for p in path.split("/") if p and p != "."]:

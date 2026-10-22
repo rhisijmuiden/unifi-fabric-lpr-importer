@@ -1,4 +1,4 @@
-"""Runs scheduled full and incremental backups and the update notification check.
+"""Runs scheduled backups, scheduled imports, console scans and the update notification check.
 
 A schedule has a frequency (hourly, daily, weekly, monthly) and a time in the
 server's local time zone. A run is due when the most recent scheduled moment has
@@ -12,10 +12,13 @@ import threading
 from datetime import datetime, timedelta
 from typing import Any
 
+from sqlalchemy import select
+
 from .. import db as app_db
 from ..config import get_settings
+from ..models import Console, ImportSchedule
 from ..settings_store import get_section
-from . import backup, jobs, notify
+from . import backup, import_schedules, jobs, notify, sync
 
 log = logging.getLogger(__name__)
 
@@ -85,25 +88,26 @@ def _save(state: dict[str, str]) -> None:
     _state_path().write_text(json.dumps(state))
 
 
+def is_due(schedule: dict[str, Any], key: str, state: dict[str, str], now: datetime) -> bool:
+    """Whether a schedule is due, recording the start in `state` when it is."""
+    if not schedule.get("enabled"):
+        return False
+    slot = last_slot(schedule, now)
+    last = state.get(key)
+    if last is None:
+        state[key] = now.isoformat()  # armed: first run at the next scheduled moment
+        return False
+    if datetime.fromisoformat(last) < slot and now - slot <= CATCH_UP:
+        state[key] = now.isoformat()
+        return True
+    return False
+
+
 def due_kinds(cfg: dict[str, Any], state: dict[str, str], now: datetime) -> list[str]:
     """Which backup kinds are due. Updates `state` (last start per kind)."""
-    due = []
-    for kind in backup.KINDS:
-        schedule = cfg.get(f"schedule_{kind}") or {}
-        if not schedule.get("enabled"):
-            continue
-        slot = last_slot(schedule, now)
-        last = state.get(kind)
-        if last is None:
-            state[kind] = now.isoformat()  # armed: first run at the next scheduled moment
-            continue
-        if datetime.fromisoformat(last) < slot and now - slot <= CATCH_UP:
-            due.append(kind)
-    if due:
-        for kind in due:
-            state[kind] = now.isoformat()
-        if "full" in due:
-            return ["full"]
+    due = [kind for kind in backup.KINDS if is_due(cfg.get(f"schedule_{kind}") or {}, kind, state, now)]
+    if "full" in due:
+        return ["full"]
     return due
 
 
@@ -131,6 +135,39 @@ def tick(now: datetime | None = None) -> str | None:
         db.close()
 
 
+def import_tick(now: datetime | None = None) -> list[str]:
+    """Start the scheduled imports that are due. Returns their names."""
+    now = now or datetime.now()
+    db = next(app_db.get_db())
+    try:
+        state = _load()
+        started = []
+        for sched in db.scalars(select(ImportSchedule).where(ImportSchedule.is_enabled).order_by(ImportSchedule.id)):
+            if is_due(sched.schedule or {}, f"import:{sched.id}", state, now):
+                import_schedules.start(db, sched, jobs.Actor("system", f"schedule: {sched.name}"))
+                started.append(sched.name)
+        _save(state)
+        return started
+    finally:
+        db.close()
+
+
+def scan_tick(now: datetime | None = None) -> bool:
+    """Read the plates of every console on the scan schedule, so presence stays current."""
+    now = now or datetime.now()
+    db = next(app_db.get_db())
+    try:
+        state = _load()
+        due = is_due(get_section(db, "access").get("scan_schedule") or {}, "scan", state, now)
+        _save(state)
+        if due and db.scalar(select(Console.id).where(Console.is_active).limit(1)) is not None:
+            jobs.start(db, "scan", jobs.Actor("system", "scheduler"), {"scheduled": True}, lambda ctx: sync.scan(ctx))
+            return True
+        return False
+    finally:
+        db.close()
+
+
 def _update_check() -> None:
     db = next(app_db.get_db())
     try:
@@ -141,7 +178,7 @@ def _update_check() -> None:
 
 def _loop() -> None:
     while not _stop.wait(TICK_SECONDS):
-        for task in (tick, _update_check):
+        for task in (tick, import_tick, scan_tick, _update_check):
             try:
                 task()
             except Exception:  # keep the scheduler alive whatever happens
@@ -153,7 +190,7 @@ def start() -> None:
     if not get_settings().scheduler or (_thread and _thread.is_alive()):
         return
     _stop.clear()
-    _thread = threading.Thread(target=_loop, daemon=True, name="backup-scheduler")
+    _thread = threading.Thread(target=_loop, daemon=True, name="scheduler")
     _thread.start()
 
 

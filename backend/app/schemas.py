@@ -190,6 +190,7 @@ class ImportMappingIn(BaseModel):
 class AccessSettingsIn(BaseModel):
     plate_notation: str = Field(default="compact", pattern="^(official|compact)$")
     delete_vehicle_users: bool = True
+    scan_schedule: "BackupSchedule | None" = None  # None keeps the current schedule
 
 
 class NotificationSettingsIn(BaseModel):
@@ -352,3 +353,46 @@ class RestoreIn(BaseModel):
     # The passphrase the backup was made with; empty = the current one.
     passphrase: str | None = None
     confirm: bool = False
+
+
+class ImportScheduleIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    is_enabled: bool = True
+    protocol: str = Field(pattern="^(url|scp|ftps|ftp)$")
+    url: str = Field(default="", max_length=1000)
+    host: str = Field(default="", max_length=255)
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str = Field(default="", max_length=255)
+    # None keeps the stored password on update.
+    password: str | None = None
+    auth_method: str = Field(default="password", pattern="^(password|key)$")
+    # None keeps the pinned SSH host key; "" forgets it.
+    host_key: str | None = None
+    remote_path: str = Field(default="", max_length=500)
+    filename: str = Field(default="", max_length=255)
+    ftps_implicit: bool = False
+    verify_tls: bool = True
+    passive: bool = True
+    mapping: dict[str, str] = {}
+    defaults: dict[str, str] = {}
+    filter_locations: list[str] = Field(default=[], max_length=100)
+    filter_departments: list[str] = Field(default=[], max_length=100)
+    console_ids: list[int] | None = None
+    mode: str = Field(default="upsert", pattern="^(upsert|full)$")
+    max_remove: int = Field(default=25, ge=0, le=100000)
+    skip_unchanged: bool = True
+    schedule: BackupSchedule = BackupSchedule(enabled=True, frequency="daily", time="06:00")
+
+
+class ImportScheduleTestIn(ImportScheduleIn):
+    name: str = ""
+    # Use the stored password and pinned host key of this schedule when none is given.
+    schedule_id: int | None = None
+
+
+class SecuritySettingsIn(BaseModel):
+    session_hours: int = Field(default=12, ge=1, le=720)
+    idle_minutes: int = Field(default=60, ge=0, le=10080)
+    login_max_attempts: int = Field(default=5, ge=3, le=100)
+    login_lock_minutes: int = Field(default=15, ge=1, le=1440)
+    api_requests_per_minute: int = Field(default=600, ge=10, le=100000)

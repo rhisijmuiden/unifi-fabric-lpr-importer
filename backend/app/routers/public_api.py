@@ -30,6 +30,7 @@ IDEMPOTENCY_WINDOW = timedelta(hours=24)
 ERRORS = {
     401: {"description": "`invalid_api_key`: key missing, wrong or disabled"},
     403: {"description": "`ip_not_allowed` or `delete_not_allowed`"},
+    429: {"description": "`too_many_requests`: rate limit of the key reached, or too many wrong keys from this address. Wait the number of seconds in the `Retry-After` header."},
 }
 
 

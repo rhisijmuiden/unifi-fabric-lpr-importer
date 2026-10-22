@@ -10,12 +10,15 @@ User=lprimporter
 Group=lprimporter
 WorkingDirectory=/opt/lpr-importer/backend
 EnvironmentFile=/etc/lpr-importer/lpr-importer.env
-# One worker: SSO sign-in state is kept in memory.
-ExecStart=/opt/lpr-importer/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8080 --proxy-headers --workers 1
+# Port 8080, HTTPS when a certificate is configured; one worker (state in memory).
+ExecStart=/opt/lpr-importer/scripts/serve.sh
 Restart=on-failure
 RestartSec=3
 PrivateTmp=true
 ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
 ReadWritePaths=/opt/lpr-importer /var/lib/lpr-importer
 
 [Install]

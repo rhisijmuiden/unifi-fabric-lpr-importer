@@ -7,7 +7,7 @@ from ..db import get_db
 from ..deps import require_admin
 from ..models import User
 from ..schemas import UserCreate, UserOut, UserUpdate
-from ..security import hash_password
+from ..security import hash_password, revoke_sessions
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -57,10 +57,14 @@ def update_user(
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "sso_account")
         user.password_hash = hash_password(changes.pop("password"))
         changes["password"] = "***"
+    # A new password, a lower role or a disabled account ends the user's sessions.
+    signs_out = "password" in changes or changes.get("is_active") is False or changes.get("role", user.role) != user.role
     for field, value in changes.items():
         if field != "password":
             setattr(user, field, value)
     db.commit()
+    if signs_out and user.id != admin.id:
+        changes["sessions_ended"] = revoke_sessions(db, user.id)
     audit.record(db, "user.updated", user=admin, target=user.username, details=changes, request=request)
     return user
 

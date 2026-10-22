@@ -76,8 +76,10 @@ as_app env HOME="$STATE_DIR" APP_DIR="$APP_DIR" "$APP_DIR/scripts/build.sh" || f
 write_status running "Restarting"
 systemctl restart lpr-importer.service || fail "Restart failed"
 sleep 3
+HEALTH=http://127.0.0.1:8080/api/health
+grep -qE '^LPR_TLS_CERT=.+' /etc/lpr-importer/lpr-importer.env 2>/dev/null && HEALTH=https://127.0.0.1:8080/api/health
 for _ in $(seq 1 20); do
-  if curl -fsS http://127.0.0.1:8080/api/health >/dev/null 2>&1; then
+  if curl -fsSk "$HEALTH" >/dev/null 2>&1; then
     NEW=$(as_app git -C "$APP_DIR" rev-parse --short=10 HEAD)
     echo "Update finished: now on $CHANNEL @ $NEW"
     write_status success "Now on $CHANNEL ($(cat "$APP_DIR/VERSION"), $NEW)"
