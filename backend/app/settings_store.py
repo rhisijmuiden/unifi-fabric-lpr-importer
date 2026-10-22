@@ -38,8 +38,8 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         "verify_tls": True,
     },
     "access": {
-        # How the plate is sent to UniFi Access: "official" (12-BDF-3) or "compact" (12BDF3).
-        "plate_notation": "official",
+        # How the plate is sent to UniFi Access: "compact" (12BDF3, default) or "official" (12-BDF-3).
+        "plate_notation": "compact",
         # When a plate is removed, also delete the Access user if it only held that vehicle.
         "delete_vehicle_users": True,
     },

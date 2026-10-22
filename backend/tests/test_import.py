@@ -32,7 +32,7 @@ def test_preview_and_run(admin_client):
 
     job = admin_client.post("/api/import/run", json={"rows": rows(), "console_ids": [c["id"]]}).json()
     assert job["status"] == "done", admin_client.get(f"/api/jobs/{job['id']}").json()
-    assert access_mock.fake_for("wognum.local").plates() == {"12-BDF-3", "VZ-482-K"}
+    assert access_mock.fake_for("wognum.local").plates() == {"12BDF3", "VZ482K"}
     groups = {g["name"] for g in access_mock.fake_for("wognum.local").groups.values()}
     assert groups == {"Netwerktransport Wognum", "Netwerktransport Zwaagdijk"}
 
@@ -47,5 +47,5 @@ def test_full_sync_removes_missing_of_same_department(admin_client):
     plan = admin_client.post("/api/import/preview", json={"rows": rows()[:1], "console_ids": [c["id"]], "mode": "full"}).json()
     assert plan["remove"] == ["VZ-482-K"]  # Distributie is not in the source, so it stays
     admin_client.post("/api/import/run", json={"rows": rows()[:1], "console_ids": [c["id"]], "mode": "full"})
-    assert access_mock.fake_for("wognum.local").plates() == {"12-BDF-3", "41-VLP-7"}
+    assert access_mock.fake_for("wognum.local").plates() == {"12BDF3", "41VLP7"}
     assert sorted(v["plate"] for v in admin_client.get("/api/vehicles").json()["items"]) == ["12-BDF-3", "41-VLP-7"]

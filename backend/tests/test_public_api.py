@@ -24,7 +24,7 @@ def test_push_and_audit_with_key_name(admin_client):
     r = admin_client.post("/api/v1/vehicles", json=body, headers=auth)
     job = admin_client.get(r.json()["status_url"], headers=auth).json()
     assert job["status"] == "done" and job["actor"] == "Lobster"
-    assert access_mock.fake_for("wognum.local").plates() == {"12-BDF-3"}
+    assert access_mock.fake_for("wognum.local").plates() == {"12BDF3"}
     assert admin_client.get("/api/v1/vehicles", headers=auth).json()[0]["consoles"] == ["Wognum"]
     entries = admin_client.get("/api/audit?q=access.plate_assigned").json()["items"]
     assert entries[0]["actor_type"] == "api_key" and entries[0]["actor"] == "Lobster"

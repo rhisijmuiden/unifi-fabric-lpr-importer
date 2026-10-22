@@ -16,7 +16,7 @@ def test_assign_creates_user_plate_and_group(admin_client):
     fake = access_mock.fake_for("wognum.local")
     [user] = fake.users.values()
     assert (user["first_name"], user["last_name"]) == ("Netwerktransport", "12-BDF-3")
-    assert [p["credential"] for p in user["license_plates"]] == ["12-BDF-3"]
+    assert [p["credential"] for p in user["license_plates"]] == ["12BDF3"]  # compact by default
     [group] = fake.groups.values()
     assert group["name"] == "Netwerktransport Wognum" and user["id"] in group["members"]
     assert not access_mock.fake_for("zwaagdijk.local").users
@@ -34,12 +34,12 @@ def test_assign_creates_user_plate_and_group(admin_client):
         assert action in actions
 
 
-def test_compact_notation(admin_client):
+def test_official_notation(admin_client):
     a, _ = setup_two(admin_client)
-    admin_client.put("/api/settings/access", json={"plate_notation": "compact", "delete_vehicle_users": True})
-    v = admin_client.post("/api/vehicles", json={"plate": "VZ-482-K", "department": "Distributie"}).json()
+    admin_client.put("/api/settings/access", json={"plate_notation": "official", "delete_vehicle_users": True})
+    v = admin_client.post("/api/vehicles", json={"plate": "vz482k", "department": "Distributie"}).json()
     admin_client.post("/api/vehicles/assign", json={"vehicle_ids": [v["id"]], "console_ids": [a["id"]]})
-    assert access_mock.fake_for("wognum.local").plates() == {"VZ482K"}
+    assert access_mock.fake_for("wognum.local").plates() == {"VZ-482-K"}
     assert str(a["id"]) in admin_client.get("/api/vehicles").json()["items"][0]["presence"]
 
 
@@ -47,7 +47,7 @@ def test_remove_deletes_vehicle_user_and_audits(admin_client):
     a, b = setup_two(admin_client)
     v = admin_client.post("/api/vehicles", json={"plate": "12-BDF-3", "department": "Netwerktransport", "location": "Wognum"}).json()
     admin_client.post("/api/vehicles/assign", json={"vehicle_ids": [v["id"]]})
-    assert access_mock.fake_for("zwaagdijk.local").plates() == {"12-BDF-3"}
+    assert access_mock.fake_for("zwaagdijk.local").plates() == {"12BDF3"}
     # A person who also holds a plate is kept; only the plate goes.
     person = access_mock.fake_for("wognum.local").add_user("Jan", "de Vries", ["5-TXR-29"])
     w = admin_client.post("/api/vehicles", json={"plate": "5-TXR-29", "department": "Directie"}).json()
@@ -57,7 +57,7 @@ def test_remove_deletes_vehicle_user_and_audits(admin_client):
     fake = access_mock.fake_for("wognum.local")
     assert fake.plates() == set()
     assert list(fake.users) == [person]
-    assert access_mock.fake_for("zwaagdijk.local").plates() == {"12-BDF-3"}
+    assert access_mock.fake_for("zwaagdijk.local").plates() == {"12BDF3"}
     assert len(admin_client.get("/api/vehicles").json()["items"]) == 2
 
     admin_client.post("/api/vehicles/remove", json={"vehicle_ids": [v["id"]], "delete_vehicles": True})
