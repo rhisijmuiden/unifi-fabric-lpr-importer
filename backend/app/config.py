@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     frontend_dist: Path = REPO_ROOT / "frontend" / "dist"
     # Command that starts the privileged update unit; overridable for tests.
     update_command: str = "sudo -n /usr/bin/systemctl start --no-block lpr-importer-update.service"
+    # Fake UniFi Access consoles for development and demos: "" (off), "empty" or "demo".
+    access_mock: str = ""
+    # Run background jobs in the request instead of a thread (tests).
+    jobs_inline: bool = False
 
 
 @lru_cache

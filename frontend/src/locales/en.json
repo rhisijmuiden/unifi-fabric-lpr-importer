@@ -1,5 +1,8 @@
 {
-  "app": { "name": "License Plate Importer", "subtitle": "UniFi Fabric" },
+  "app": {
+    "name": "License Plate Importer",
+    "subtitle": "UniFi Fabric"
+  },
   "nav": {
     "overview": "Overview",
     "dashboard": "Dashboard",
@@ -13,7 +16,7 @@
     "mail": "Mail server",
     "system": "System & updates",
     "audit": "Audit log",
-    "soon": "Soon"
+    "apiKeys": "API keys"
   },
   "common": {
     "save": "Save",
@@ -36,8 +39,16 @@
     "next": "Next",
     "confirmDelete": "Are you sure you want to delete {{name}}?"
   },
-  "theme": { "light": "Light", "dark": "Dark", "toggle": "Toggle theme" },
-  "roles": { "admin": "Administrator", "operator": "Operator", "viewer": "Read-only" },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Toggle theme"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "operator": "Operator",
+    "viewer": "Read-only"
+  },
   "login": {
     "title": "Sign in",
     "subtitle": "Manage company vehicle license plates in UniFi Access",
@@ -56,7 +67,7 @@
   },
   "dashboard": {
     "welcome": "Welcome, {{name}}",
-    "intro": "The foundation is in place. Vehicle management, console linking and the import wizard arrive in phase 2.",
+    "intro": "Company vehicles and their license plates on every UniFi Access console.",
     "version": "Version",
     "channel": "Channel",
     "sso": "Single sign-on",
@@ -64,14 +75,16 @@
     "on": "On",
     "off": "Off",
     "notConfigured": "Not configured",
-    "nextUp": "Coming next",
-    "nextItems": [
-      "Link consoles with a step-by-step guide and a test button",
-      "Read existing UniFi Access users and plates",
-      "CSV import wizard with field mapping and location filter",
-      "Assign vehicles to groups with the naming convention",
-      "Statistics and per-console presence overview"
-    ]
+    "vehicles": "Vehicles in the app",
+    "consoles": "Consoles connected",
+    "consolesValue": "{{ok}} of {{total}}",
+    "missing": "Missing on a console",
+    "unmanaged": "Plates not in the app",
+    "startTitle": "Start by linking your consoles",
+    "startBody": "Add the UniFi consoles with their Access API token. Then read the existing plates or import a CSV file.",
+    "recentJobs": "Recent jobs",
+    "noJobs": "No jobs have run yet.",
+    "system": "System"
   },
   "users": {
     "title": "Users",
@@ -197,10 +210,307 @@
     "ip": "IP address",
     "empty": "No entries found."
   },
-  "soon": {
-    "title": "Coming in phase 2",
-    "body": "This part of the application is planned in the roadmap and will be built next."
+  "errors": {
+    "generic": "Something went wrong: {{detail}}"
   },
-  "errors": { "generic": "Something went wrong: {{detail}}" },
-  "userMenu": { "language": "Language", "logout": "Sign out" }
+  "userMenu": {
+    "language": "Language",
+    "logout": "Sign out"
+  },
+  "jobs": {
+    "kinds": {
+      "scan": "Read consoles",
+      "assign": "Assign to consoles",
+      "remove": "Remove from consoles",
+      "import": "Import"
+    },
+    "status": {
+      "queued": "Queued",
+      "running": "Running…",
+      "done": "Finished",
+      "failed": "Failed"
+    },
+    "progress": "{{processed}} / {{total}}",
+    "processed": "Processed",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "report": "Report",
+    "onlyFailed": "Only failures",
+    "crashed": "The job stopped because of an unexpected error. See the last line of the report.",
+    "background": "Continue in background"
+  },
+  "consoles": {
+    "title": "Consoles",
+    "description": "UniFi consoles with UniFi Access. The app reads and changes plates through the local Access API.",
+    "add": "Add console",
+    "name": "Name",
+    "location": "Location",
+    "locationHint": "The standplaats of this console, used as default for adopted plates.",
+    "host": "Address",
+    "hostHint": "Local IP address or host name of the console.",
+    "port": "Port",
+    "token": "Access API token",
+    "tokenHint": "Stored encrypted. It is never shown again.",
+    "verifyTls": "Verify the certificate",
+    "verifyTlsHint": "Leave off for the console's own self-signed certificate.",
+    "activeHint": "Inactive consoles are skipped by imports and reads.",
+    "test": "Test",
+    "testOk": "Connected. The console has {{users}} users and {{groups}} user groups.",
+    "testFailed": "The connection test failed",
+    "testErrors": {
+      "unauthorized": "The token was refused. Create a new API token in UniFi Access and paste it again.",
+      "forbidden": "The token lacks permissions. Give it at least view and edit rights for users.",
+      "connection_failed": "Cannot reach the console. Check the address and that port 12445 is open from this server.",
+      "timeout": "The console did not answer in time. Check the address and the firewall.",
+      "not_found": "The Access API was not found on this address. Check that UniFi Access 4.2 or newer runs on this console.",
+      "http_error": "The connection failed. If “Verify the certificate” is on, try it off."
+    },
+    "connected": "Connected",
+    "unreachable": "Unreachable",
+    "notTested": "Not tested",
+    "platesFound": "Plates on console",
+    "lastScan": "Last read",
+    "lastTest": "Last test",
+    "scan": "Read",
+    "scanAll": "Read all consoles",
+    "confirmDelete": "Remove {{name}} from this app? Nothing changes on the console itself.",
+    "emptyTitle": "No consoles yet",
+    "emptyBody": "Link each UniFi console that runs UniFi Access. You need its address and an API token.",
+    "help": {
+      "title": "Where to find this",
+      "steps": [
+        {
+          "title": "Open UniFi Access",
+          "body": "Open the console in your browser (or via unifi.ui.com) and start the Access application."
+        },
+        {
+          "title": "Create an API token",
+          "body": "Go to Settings › General › Advanced › API Token and click Create New. Name it e.g. “License Plate Importer”."
+        },
+        {
+          "title": "Give it user rights",
+          "body": "Select at least View and Edit for Users (and User Groups), and choose a validity that suits you."
+        },
+        {
+          "title": "Copy the token",
+          "body": "The token is shown only once. Paste it into the field on the left."
+        },
+        {
+          "title": "Enter the address",
+          "body": "Use the console's local IP address. This server must reach it on port 12445 (HTTPS)."
+        },
+        {
+          "title": "Test",
+          "body": "Click Test. When the connection works, save the console and click Read to load its existing plates."
+        }
+      ]
+    },
+    "settings": {
+      "title": "UniFi Access settings",
+      "description": "How vehicles are written to every console.",
+      "notation": "Plate notation in UniFi Access",
+      "notationHint": "The last name of the user always uses the official notation. This only changes the license plate credential itself.",
+      "official": "Official (12-BDF-3)",
+      "compact": "Without dashes (12BDF3)",
+      "deleteUsers": "Delete the vehicle user when its plate is removed",
+      "deleteUsersHint": "Only users named by the convention (last name = plate) without other plates are deleted. People keep their account."
+    },
+    "errors": {
+      "name_taken": "A console with this name already exists.",
+      "token_required": "Enter the Access API token."
+    }
+  },
+  "vehicles": {
+    "title": "Vehicles",
+    "description": "Description",
+    "add": "Add vehicle",
+    "readConsoles": "Read consoles",
+    "plate": "License plate",
+    "plateHint": "Dutch plates are written in the official notation automatically.",
+    "department": "Department",
+    "location": "Location",
+    "group": "Group",
+    "groupHint": "Default: department + location. The group is created on the console when missing.",
+    "convention": "In UniFi Access",
+    "conventionUser": "User",
+    "conventionGroup": "Group",
+    "searchPlaceholder": "Search plate, group or description",
+    "allDepartments": "All departments",
+    "allLocations": "All locations",
+    "allGroups": "All groups",
+    "presence": "Presence",
+    "presenceAll": "All vehicles",
+    "presenceMissing": "Missing on a console",
+    "presenceComplete": "On every console",
+    "present": "Present",
+    "absent": "Not present",
+    "notScanned": "Not read yet",
+    "selected": "{{count}} selected",
+    "selectAll": "Select all",
+    "assignTo": "Assign to…",
+    "assign": "Assign",
+    "bulkEdit": "Edit",
+    "remove": "Remove from consoles",
+    "assignTitle": "Assign {{count}} vehicles",
+    "assignBody": "Each vehicle gets a user (first name = department, last name = plate), its plate, and is added to its group. Existing users and groups are reused.",
+    "removeTitle": "Remove {{count}} vehicles from consoles",
+    "removeBody": "The plates are taken off the selected consoles. This is recorded in the audit log.",
+    "alsoDelete": "Also delete from this app",
+    "alsoDeleteHint": "Otherwise the vehicles stay in the list as not present.",
+    "bulkEditTitle": "Edit {{count}} vehicles",
+    "bulkEditBody": "Only filled-in fields are changed. Changing department or location also updates the group, unless you set a group.",
+    "bulkGroupHint": "Leave empty to use department + location.",
+    "adoptBanner": "{{count}} plates were found on the consoles that this app does not manage yet.",
+    "adoptReview": "Review and adopt",
+    "adoptTitle": "Adopt plates from the consoles",
+    "adoptBody": "Check the department and location. Plates of users that follow the naming convention are filled in already.",
+    "adoptCount": "{{count}} to adopt",
+    "adopt": "Adopt",
+    "accessUser": "Access user",
+    "noConvention": "Does not follow the naming convention",
+    "emptyTitle": "No vehicles found",
+    "emptyBody": "Read the consoles to adopt existing plates, import a CSV file or add a vehicle.",
+    "count": "{{count}} vehicles",
+    "errors": {
+      "invalid_plate": "This is not a valid license plate.",
+      "plate_exists": "This plate is already in the list."
+    },
+    "intro": "Every known plate, with per console whether it is present in UniFi Access."
+  },
+  "import": {
+    "title": "Import",
+    "description": "Import vehicles from a CSV file, assign them to groups and register them on the consoles.",
+    "steps": [
+      "Upload",
+      "Map columns",
+      "Review & group",
+      "Register"
+    ],
+    "dropTitle": "Drop a CSV file here or click to choose",
+    "dropBody": "Separated by semicolon or comma, with a header row. Excel exports work too. Nothing changes until the last step.",
+    "mappingTitle": "Which column is what?",
+    "mappingBody": "{{file}} · {{count}} rows. The mapping is remembered for the next import.",
+    "noColumn": "— not in the file —",
+    "defaultPlaceholder": "Value when empty",
+    "fields": {
+      "plate": "License plate",
+      "department": "Department",
+      "location": "Location (standplaats)",
+      "group_name": "Group",
+      "description": "Description"
+    },
+    "fieldHints": {
+      "plate": "Written in the official notation automatically.",
+      "department": "Becomes the first name of the Access user.",
+      "location": "Used for the group and the location filter.",
+      "group_name": "Optional. Default: department + location.",
+      "description": "Optional, e.g. make or type."
+    },
+    "sampleTitle": "Preview",
+    "sampleBody": "The first rows as they will be read.",
+    "status": {
+      "new": "New",
+      "changed": "Changed",
+      "unchanged": "Unchanged",
+      "invalid": "Invalid",
+      "excluded": "Excluded"
+    },
+    "errors": {
+      "invalid_plate": "Invalid plate",
+      "missing_department": "No department",
+      "duplicate": "Duplicate",
+      "empty_file": "The file is empty.",
+      "too_many_rows": "The file has more than 20,000 rows.",
+      "file_too_large": "The file is larger than 10 MB."
+    },
+    "groups": "Groups",
+    "noGroup": "No group",
+    "bulkField": "Change",
+    "assignGroup": "Assign to group",
+    "setDepartment": "Set department",
+    "setLocation": "Set location",
+    "apply": "Apply",
+    "exclude": "Exclude",
+    "include": "Include",
+    "result": "Result",
+    "visible": "{{count}} of {{total}} rows shown",
+    "firstThousand": "only the first 1,000 are listed; use the filters",
+    "consolesTitle": "Register on consoles",
+    "consolesBody": "The numbers come from the last read of each console.",
+    "noConsoles": "No active consoles. The vehicles are stored in the app only.",
+    "basedOnScan": "Based on the last read",
+    "notScanned": "Not read yet: everything counts as new",
+    "toAdd": "{{count}} to add",
+    "alreadyPresent": "{{count}} already present",
+    "toRemove": "{{count}} to remove",
+    "summaryTitle": "Summary",
+    "toImport": "Vehicles to import",
+    "mode": "Mode",
+    "modes": {
+      "upsert": "Add and update",
+      "upsertHint": "Vehicles that are not in the file stay where they are.",
+      "full": "Full sync",
+      "fullHint": "Vehicles of the departments in this file that the file no longer lists are removed from the app and every console."
+    },
+    "removeWarning": "{{count}} vehicles will be removed",
+    "start": "Import and register on {{count}} consoles",
+    "startStoreOnly": "Import into the app only",
+    "done": "Import finished",
+    "doneWithErrors": "Import finished with errors",
+    "doneBody": "{{succeeded}} changes succeeded, {{failed}} failed.",
+    "toVehicles": "View vehicles",
+    "another": "Import another file"
+  },
+  "stats": {
+    "title": "Statistics",
+    "description": "How many vehicles are registered, per department, group, location and console.",
+    "vehicles": "Vehicles",
+    "departments": "Departments",
+    "groups": "Groups",
+    "changes30d": "Plates added / removed",
+    "changesHint": "On the consoles, last 30 days",
+    "perConsole": "Coverage per console",
+    "perConsoleHint": "Vehicles of the app that are present on each console, based on the last read.",
+    "noConsoles": "No consoles linked yet.",
+    "scanned": "Read {{time}}",
+    "present": "{{count}} present",
+    "missing": "{{count}} missing",
+    "unmanaged": "{{count}} not in the app",
+    "byDepartment": "Per department",
+    "byLocation": "Per location",
+    "byGroup": "Per group",
+    "none": "No vehicles yet.",
+    "activity": "Changes on the consoles",
+    "activityHint": "Plates added and removed per day, last 30 days.",
+    "added": "Added",
+    "removed": "Removed",
+    "noActivity": "No changes in the last 30 days."
+  },
+  "apiKeys": {
+    "title": "API keys",
+    "description": "Keys for systems such as Lobster that deliver vehicles through the REST API.",
+    "add": "New API key",
+    "create": "Create key",
+    "name": "Name",
+    "nameHint": "Shown in the audit log for every change made with this key.",
+    "allowDelete": "Allow removing vehicles",
+    "allowDeleteHint": "Needed for full sync and for DELETE requests.",
+    "created": "API key created",
+    "copyOnce": "Copy the key now. It is shown only once and cannot be retrieved later.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "rights": "Rights",
+    "readWrite": "Read and add",
+    "readWriteDelete": "Read, add and remove",
+    "toggleDelete": "Click to change",
+    "lastUsed": "Last used",
+    "empty": "No API keys yet.",
+    "docsTitle": "How it works",
+    "docsBody": "Send vehicles as JSON with the key as bearer token. The same conversion and naming convention as the CSV import apply.",
+    "openDocs": "Open the interactive API documentation",
+    "guide": "The integration guide for the supplier is in docs/api.md (English) and docs/api.nl.md (Dutch) in the repository.",
+    "errors": {
+      "name_taken": "A key with this name already exists."
+    }
+  }
 }

@@ -12,6 +12,7 @@ import {
   Mail,
   Menu,
   Moon,
+  PlugZap,
   RefreshCw,
   ScrollText,
   Server,
@@ -33,7 +34,6 @@ interface NavItem {
   label: string;
   icon: ComponentType<{ className?: string }>;
   roles?: Role[];
-  soon?: boolean;
 }
 
 function useNav(): { title: string; items: NavItem[] }[] {
@@ -43,16 +43,17 @@ function useNav(): { title: string; items: NavItem[] }[] {
       title: t("nav.overview"),
       items: [
         { to: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
-        { to: "/vehicles", label: t("nav.vehicles"), icon: Car, soon: true },
-        { to: "/consoles", label: t("nav.consoles"), icon: Server, soon: true },
-        { to: "/import", label: t("nav.import"), icon: FileUp, soon: true },
-        { to: "/statistics", label: t("nav.statistics"), icon: BarChart3, soon: true },
+        { to: "/vehicles", label: t("nav.vehicles"), icon: Car },
+        { to: "/import", label: t("nav.import"), icon: FileUp, roles: ["admin", "operator"] },
+        { to: "/consoles", label: t("nav.consoles"), icon: Server },
+        { to: "/statistics", label: t("nav.statistics"), icon: BarChart3 },
       ],
     },
     {
       title: t("nav.administration"),
       items: [
         { to: "/admin/users", label: t("nav.users"), icon: Users, roles: ["admin"] },
+        { to: "/admin/api-keys", label: t("nav.apiKeys"), icon: PlugZap, roles: ["admin"] },
         { to: "/admin/sso", label: t("nav.sso"), icon: KeyRound, roles: ["admin"] },
         { to: "/admin/mail", label: t("nav.mail"), icon: Mail, roles: ["admin"] },
         { to: "/admin/system", label: t("nav.system"), icon: RefreshCw, roles: ["admin"] },
@@ -106,7 +107,6 @@ function Sidebar({ onNavigate, onInfo }: { onNavigate?: () => void; onInfo: () =
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
                       <span className="flex-1 truncate">{item.label}</span>
-                      {item.soon && <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-muted ring-1 ring-line">{t("nav.soon")}</span>}
                     </NavLink>
                   </li>
                 ))}

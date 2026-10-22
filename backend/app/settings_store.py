@@ -37,6 +37,17 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         "from_name": "UniFi Fabric License Plate Importer",
         "verify_tls": True,
     },
+    "access": {
+        # How the plate is sent to UniFi Access: "official" (12-BDF-3) or "compact" (12BDF3).
+        "plate_notation": "official",
+        # When a plate is removed, also delete the Access user if it only held that vehicle.
+        "delete_vehicle_users": True,
+    },
+    "import": {
+        # Last used CSV column mapping, offered again on the next import.
+        "mapping": {},
+        "defaults": {},
+    },
 }
 
 SECRET_FIELDS = {

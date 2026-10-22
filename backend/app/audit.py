@@ -24,6 +24,8 @@ def record(
     request: Request | None = None,
     success: bool = True,
     message: str = "",
+    ip: str = "",
+    commit: bool = True,
 ) -> None:
     db.add(
         AuditLog(
@@ -32,9 +34,10 @@ def record(
             action=action,
             target=target,
             details=details or {},
-            ip_address=client_ip(request),
+            ip_address=client_ip(request) or ip,
             success=success,
             message=message,
         )
     )
-    db.commit()
+    if commit:
+        db.commit()
