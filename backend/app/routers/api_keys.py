@@ -22,7 +22,9 @@ def _networks(values: list[str]) -> list[str]:
         if not value:
             continue
         try:
-            cleaned.append(str(ipaddress.ip_network(value, strict=False)))
+            network = ipaddress.ip_network(value, strict=False)
+            # A single address is shown without /32 or /128.
+            cleaned.append(str(network.network_address) if network.num_addresses == 1 else str(network))
         except ValueError as exc:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, f"invalid_network:{value}") from exc
     return cleaned

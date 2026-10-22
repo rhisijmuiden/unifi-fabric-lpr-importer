@@ -82,8 +82,8 @@ def test_idempotency_key_returns_same_job(admin_client):
 
 
 def test_ip_allowlist(admin_client):
-    r = admin_client.post("/api/api-keys", json={"name": "Lobster", "allowed_ips": ["10.0.0.0/8"]})
-    assert r.status_code == 201 and r.json()["allowed_ips"] == ["10.0.0.0/8"]
+    r = admin_client.post("/api/api-keys", json={"name": "Lobster", "allowed_ips": ["10.1.2.3/8", "203.0.113.10"]})
+    assert r.status_code == 201 and r.json()["allowed_ips"] == ["10.0.0.0/8", "203.0.113.10"]
     auth = {"Authorization": f"Bearer {r.json()['key']}"}
     # The test client connects from "testclient", which is in no network.
     assert admin_client.get("/api/v1/status", headers=auth).status_code == 403
