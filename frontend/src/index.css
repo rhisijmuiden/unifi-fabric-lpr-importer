@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* RHIS huisstijl (brand/tokens.css in rhis-website). Archivo is self-hosted (SIL Open Font License). */
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("/fonts/archivo-latin.woff2") format("woff2");
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --surface: #f6f7fb;
+  --surface-raised: #ffffff;
+  --ink: #14213d;
+  --ink-muted: #4f5b73;
+  --line: #dce1eb;
+  --accent-text: #b8392a;
+  --status-online: #1c8a57;
+  --status-warning: #a86b00;
+  --status-offline: #c23434;
+  /* Primary action: nacht on light, lucht on dark. */
+  --primary: #14213d;
+  --primary-ink: #ffffff;
+  color-scheme: light;
+}
+
+.dark {
+  --surface: #0e1626;
+  --surface-raised: #16213a;
+  --ink: #eef1f7;
+  --ink-muted: #a3aec4;
+  --line: #26324d;
+  --accent-text: #ff8a78;
+  --status-online: #4acb8c;
+  --status-warning: #f2b640;
+  --status-offline: #ff7a7a;
+  --primary: #9cc3ff;
+  --primary-ink: #14213d;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --color-nacht: #14213d;
+  --color-koraal: #ff6b57;
+  --color-lucht: #9cc3ff;
+  --color-wolk: #f6f7fb;
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent-text: var(--accent-text);
+  --color-online: var(--status-online);
+  --color-warning: var(--status-warning);
+  --color-offline: var(--status-offline);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+@layer base {
+  html {
+    @apply bg-surface font-sans text-ink antialiased;
+  }
+  body {
+    @apply min-h-screen;
+  }
+}
+
+@utility font-display-wide {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+}

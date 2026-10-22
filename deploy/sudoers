@@ -1,0 +1,2 @@
+# Lets the web app start the update unit and nothing else.
+lprimporter ALL=(root) NOPASSWD: /usr/bin/systemctl start --no-block lpr-importer-update.service
