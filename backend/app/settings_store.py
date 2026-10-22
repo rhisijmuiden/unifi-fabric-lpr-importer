@@ -43,6 +43,18 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         # When a plate is removed, also delete the Access user if it only held that vehicle.
         "delete_vehicle_users": True,
     },
+    "backup": {
+        # Encrypts every backup (AES-256-GCM). Needed to restore, also on a new server.
+        "passphrase": "",
+        # The application's own SSH key (OpenSSH format) for SCP targets.
+        "ssh_private_key": "",
+        # Number of full backups to keep per target, each with its incremental backups.
+        "keep_full": 4,
+        "schedule_full": {"enabled": True, "frequency": "weekly", "time": "02:00", "weekday": 6, "monthday": 1},
+        "schedule_incremental": {"enabled": True, "frequency": "daily", "time": "02:00", "weekday": 0, "monthday": 1},
+        "notify_email": "",
+        "notify_on": "failure",  # failure | always | never
+    },
     "import": {
         # Last used CSV column mapping, offered again on the next import.
         "mapping": {},
@@ -53,6 +65,7 @@ DEFAULTS: dict[str, dict[str, Any]] = {
 SECRET_FIELDS = {
     "sso": {"client_secret"},
     "smtp": {"password", "oauth_client_secret"},
+    "backup": {"passphrase", "ssh_private_key"},
 }
 
 

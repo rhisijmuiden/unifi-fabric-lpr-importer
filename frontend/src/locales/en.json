@@ -16,7 +16,8 @@
     "mail": "Mail server",
     "system": "System & updates",
     "audit": "Audit log",
-    "apiKeys": "API keys"
+    "apiKeys": "API keys",
+    "backup": "Backup & restore"
   },
   "common": {
     "save": "Save",
@@ -222,7 +223,9 @@
       "scan": "Read consoles",
       "assign": "Assign to consoles",
       "remove": "Remove from consoles",
-      "import": "Import"
+      "import": "Import",
+      "backup": "Backup",
+      "restore": "Restore"
     },
     "status": {
       "queued": "Queued",
@@ -511,6 +514,168 @@
     "guide": "The integration guide for the supplier is in docs/api.md (English) and docs/api.nl.md (Dutch) in the repository.",
     "errors": {
       "name_taken": "A key with this name already exists."
+    }
+  },
+  "backup": {
+    "title": "Backup & restore",
+    "description": "Encrypted full and incremental backups to your own servers, and restore from them.",
+    "runIncremental": "Incremental backup now",
+    "runFull": "Full backup now",
+    "needPassphrase": "Set a backup passphrase and add a backup location before the first backup.",
+    "targets": "Backup locations",
+    "targetsHint": "Every backup is sent to each active location.",
+    "addTarget": "Add location",
+    "noTargets": "No backup location yet. Add a server reached with SCP (SSH), FTPS or FTP.",
+    "protocols": {
+      "scp": "SCP (SSH)",
+      "ftps": "FTPS",
+      "ftp": "FTP"
+    },
+    "statusOk": "Last backup OK",
+    "statusFailed": "Last backup failed",
+    "statusNone": "No backup yet",
+    "lastBackup": "Last backup",
+    "browse": "Backups",
+    "confirmDelete": "Delete the location {{name}}? The backups on that server stay where they are.",
+    "howTitle": "How it works",
+    "how": [
+      "A full backup contains all vehicles, consoles, users, settings, API keys and the audit log.",
+      "An incremental backup only contains what changed since the previous backup on that location, so it is small and fast.",
+      "Every backup is encrypted with AES-256 using your passphrase before it leaves this server.",
+      "Restoring an incremental backup automatically uses the full backup and the incremental backups before it.",
+      "On a new server: install with install.sh --restore, or add the location here and restore from the list."
+    ],
+    "uploadTitle": "Restore from a file",
+    "uploadHint": "Upload a backup file from your computer: a full backup, or a full backup together with its incremental backups.",
+    "chooseFiles": "Choose .lprbak files",
+    "restore": "Restore",
+    "restoreTitle": "Restore {{name}}",
+    "restoreWarning": "All current data of this application (vehicles, consoles, users, settings, API keys, audit log) is replaced by the backup. A copy of the current data is saved on this server first. Nothing changes on the UniFi consoles.",
+    "restorePassphrase": "Passphrase of the backup",
+    "restorePassphraseHint": "Leave empty when the backup was made with the current passphrase.",
+    "restoreUnderstood": "I understand that the current data will be replaced.",
+    "backupsOn": "Backups on {{name}}",
+    "noBackups": "No backups found in this folder.",
+    "date": "Date",
+    "type": "Type",
+    "size": "Size",
+    "kinds": {
+      "full": "Full",
+      "incremental": "Incremental"
+    },
+    "incomplete": "Incomplete",
+    "download": "Download",
+    "chainHint": "An incremental backup can only be restored while its full backup and the incremental backups in between are present (marked incomplete otherwise).",
+    "encryption": "Encryption",
+    "encryptionHint": "The passphrase encrypts every backup. Without it a backup cannot be restored, also not by us.",
+    "notSet": "Not set",
+    "passphrase": "Passphrase",
+    "newPassphrase": "New passphrase",
+    "passphraseHint": "At least 12 characters. Store it in your password manager: you need it to restore on a new server.",
+    "passphraseChangeHint": "Leave empty to keep the current passphrase. After a change, the next backup is a full backup; older backups keep their old passphrase.",
+    "generate": "Generate",
+    "storeSafely": "Store this passphrase in your password manager before saving.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "scheduleTitle": "Schedule",
+    "scheduleHint": "Times are in the time zone of this server. A missed backup (server off) is made within 6 hours, otherwise at the next moment.",
+    "schedule": {
+      "full": "Full backup",
+      "fullHint": "Starts a new chain. Weekly is a good default.",
+      "incremental": "Incremental backup",
+      "incrementalHint": "Only the changes since the previous backup. Daily or hourly.",
+      "frequency": "Frequency",
+      "hourly": "Every hour",
+      "daily": "Every day",
+      "weekly": "Every week",
+      "monthly": "Every month",
+      "weekday": "Day",
+      "monthday": "Day of the month",
+      "minute": "Minute",
+      "time": "Time",
+      "next": "Next run: {{date}}"
+    },
+    "retentionTitle": "Retention and notifications",
+    "keepFull": "Full backups to keep per location",
+    "keepFullHint": "Older full backups are deleted from the server together with their incremental backups.",
+    "notifyEmail": "Send a mail to",
+    "notifyHint": "Uses the mail server settings.",
+    "notifyOn": "When",
+    "notify": {
+      "failure": "Only when a backup fails",
+      "always": "After every backup",
+      "never": "Never"
+    },
+    "sshKeyTitle": "SSH key of this application",
+    "sshKeyHelp": "For SCP locations with key sign-in: add this public key to ~/.ssh/authorized_keys of the backup user on the server.",
+    "newSshKey": "New key",
+    "newSshKeyConfirm": "Create a new SSH key? Locations that use the current key stop working until the new public key is added on the server.",
+    "targetName": "Name",
+    "protocol": "Protocol",
+    "ftpWarning": "Plain FTP sends the password unencrypted. The backup file itself is always encrypted, but prefer SCP or FTPS.",
+    "host": "Server",
+    "port": "Port",
+    "ftpsMode": "TLS mode",
+    "ftpsExplicit": "Explicit (AUTH TLS, usually port 21)",
+    "ftpsImplicit": "Implicit (usually port 990)",
+    "username": "Username",
+    "authMethod": "Sign in with",
+    "authKey": "SSH key of this application (recommended)",
+    "authPassword": "Password",
+    "password": "Password",
+    "remotePath": "Folder on the server",
+    "remotePathHint": "Created when it does not exist. Relative to the home folder unless it starts with /.",
+    "verifyTls": "Verify the server certificate",
+    "verifyTlsHint": "Switch off only for a self-signed certificate on your own network.",
+    "passive": "Passive mode",
+    "passiveHint": "Needed behind most firewalls and NAT.",
+    "enabledHint": "Inactive locations receive no backups but can still be used to restore.",
+    "test": "Test connection",
+    "testOk_one": "Connected and able to write. {{count}} backup found.",
+    "testOk_other": "Connected and able to write. {{count}} backups found.",
+    "testFailed": "Connection test failed",
+    "hostKey": "SSH host key",
+    "hostKeyHelp": "Trusted on the first connection. A different key later is refused, so nobody can pose as your server.",
+    "forgetHostKey": "Forget host key",
+    "protocolHelp": {
+      "scp": {
+        "title": "SCP (SSH)",
+        "body": "Recommended. Works with any Linux server or NAS with SSH (Synology, QNAP, TrueNAS). Uses SFTP when the server offers it, otherwise classic scp."
+      },
+      "ftps": {
+        "title": "FTPS",
+        "body": "FTP over TLS 1.2 or newer. Explicit TLS is the common choice; use implicit for servers that only listen on port 990."
+      },
+      "ftp": {
+        "title": "FTP",
+        "body": "For old servers only. The backup file is encrypted, but the sign-in is not."
+      }
+    },
+    "remoteErrors": {
+      "connect_failed": "Could not connect to the server. Check the address, the port and the firewall.",
+      "login_failed": "The server refused the username or password (or the SSH key).",
+      "tls_verify_failed": "The server's certificate could not be verified. Use a valid certificate or switch off certificate verification for a self-signed one.",
+      "host_key_mismatch": "The server's SSH host key changed since it was trusted. If the server was replaced on purpose, forget the stored host key and test again.",
+      "not_found": "The file or folder does not exist on the server.",
+      "transfer_failed": "The transfer was interrupted.",
+      "remote_error": "The server reported an error.",
+      "invalid_key": "The SSH key of this application could not be read. Create a new one below.",
+      "invalid_protocol": "Unknown protocol."
+    },
+    "errors": {
+      "connect_failed": "Could not connect to the server. Check the address, the port and the firewall.",
+      "login_failed": "The server refused the username or password (or the SSH key).",
+      "tls_verify_failed": "The server's certificate could not be verified. Use a valid certificate or switch off certificate verification for a self-signed one.",
+      "host_key_mismatch": "The server's SSH host key changed since it was trusted. If the server was replaced on purpose, forget the stored host key and test again.",
+      "not_found": "Not found.",
+      "transfer_failed": "The transfer was interrupted.",
+      "remote_error": "The server reported an error.",
+      "invalid_key": "The SSH key of this application could not be read. Create a new one below.",
+      "invalid_protocol": "Unknown protocol.",
+      "name_taken": "A location with this name already exists.",
+      "confirm_required": "Confirm the restore first.",
+      "invalid_file": "This is not a backup file of this application (.lprbak).",
+      "too_large": "The files are too large to upload."
     }
   }
 }

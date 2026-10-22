@@ -166,3 +166,32 @@ class Job(Base):
     log: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class BackupTarget(Base):
+    """A remote location (FTP, FTPS or SCP) that receives encrypted backups."""
+
+    __tablename__ = "backup_targets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True)
+    protocol: Mapped[str] = mapped_column(String(10))  # ftp | ftps | scp
+    host: Mapped[str] = mapped_column(String(255))
+    port: Mapped[int] = mapped_column(Integer)
+    username: Mapped[str] = mapped_column(String(255), default="")
+    password: Mapped[str] = mapped_column(Text, default="")  # encrypted
+    # scp only: "password" or "key" (the application's own SSH key).
+    auth_method: Mapped[str] = mapped_column(String(10), default="password")
+    # scp only: SHA256 fingerprint pinned on the first successful connection.
+    host_key: Mapped[str] = mapped_column(String(128), default="")
+    remote_path: Mapped[str] = mapped_column(String(500), default="lpr-importer")
+    # ftps only: implicit TLS (port 990) instead of explicit (AUTH TLS on port 21).
+    ftps_implicit: Mapped[bool] = mapped_column(Boolean, default=False)
+    verify_tls: Mapped[bool] = mapped_column(Boolean, default=True)
+    passive: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_backup_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_backup_name: Mapped[str] = mapped_column(String(100), default="")
+    last_status: Mapped[str] = mapped_column(String(20), default="")  # "" | ok | failed
+    last_message: Mapped[str] = mapped_column(Text, default="")

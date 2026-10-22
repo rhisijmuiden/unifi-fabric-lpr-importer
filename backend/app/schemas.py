@@ -224,3 +224,58 @@ class ApiVehiclesIn(BaseModel):
     # Console ids or names to register on; omitted = all active consoles, [] = store only.
     consoles: list[int | str] | None = None
     dry_run: bool = False
+
+
+class BackupTargetIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    protocol: str = Field(pattern="^(ftp|ftps|scp)$")
+    host: str = Field(min_length=1, max_length=255)
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str = Field(default="", max_length=255)
+    # None keeps the stored password on update.
+    password: str | None = None
+    auth_method: str = Field(default="password", pattern="^(password|key)$")
+    # None keeps the pinned SSH host key; "" forgets it (pinned again on the next connection).
+    host_key: str | None = None
+    remote_path: str = Field(default="lpr-importer", max_length=500)
+    ftps_implicit: bool = False
+    verify_tls: bool = True
+    passive: bool = True
+    is_enabled: bool = True
+
+
+class BackupTargetTestIn(BackupTargetIn):
+    name: str = ""
+    # Use the stored password and pinned host key of this target when none is given.
+    target_id: int | None = None
+
+
+class BackupSchedule(BaseModel):
+    enabled: bool = False
+    frequency: str = Field(default="daily", pattern="^(hourly|daily|weekly|monthly)$")
+    time: str = Field(default="02:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    weekday: int = Field(default=6, ge=0, le=6)  # 0 = Monday
+    monthday: int = Field(default=1, ge=1, le=28)
+
+
+class BackupSettingsIn(BaseModel):
+    # None keeps the current passphrase.
+    passphrase: str | None = Field(default=None, min_length=12, max_length=200)
+    keep_full: int = Field(default=4, ge=1, le=100)
+    schedule_full: BackupSchedule
+    schedule_incremental: BackupSchedule
+    notify_email: str = Field(default="", max_length=255)
+    notify_on: str = Field(default="failure", pattern="^(failure|always|never)$")
+
+
+class BackupRunIn(BaseModel):
+    kind: str = Field(pattern="^(full|incremental)$")
+    target_ids: list[int] | None = None
+
+
+class RestoreIn(BaseModel):
+    target_id: int
+    name: str = Field(min_length=1, max_length=100)
+    # The passphrase the backup was made with; empty = the current one.
+    passphrase: str | None = None
+    confirm: bool = False

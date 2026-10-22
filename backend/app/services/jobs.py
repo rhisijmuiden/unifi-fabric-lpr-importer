@@ -62,11 +62,12 @@ class JobContext:
 JobFn = Callable[[JobContext], dict[str, Any] | None]
 
 
-def start(db: Session, kind: str, actor: Actor, params: dict[str, Any], fn: JobFn) -> Job:
+def start(db: Session, kind: str, actor: Actor, params: dict[str, Any], fn: JobFn, inline: bool = False) -> Job:
+    """Run fn as a job in a worker thread, or right away when `inline` (command line)."""
     job = Job(kind=kind, actor_type=actor.type, actor=actor.name, params=params)
     db.add(job)
     db.commit()
-    if get_settings().jobs_inline:
+    if inline or get_settings().jobs_inline:
         _run(job.id, actor, fn)
         db.refresh(job)
     else:

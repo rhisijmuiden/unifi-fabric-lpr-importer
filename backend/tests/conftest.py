@@ -19,6 +19,7 @@ def app_env(tmp_path, monkeypatch):
     monkeypatch.setenv("LPR_FRONTEND_DIST", str(tmp_path / "no-dist"))
     monkeypatch.setenv("LPR_ACCESS_MOCK", "empty")
     monkeypatch.setenv("LPR_JOBS_INLINE", "true")
+    monkeypatch.setenv("LPR_SCHEDULER", "false")
     get_settings.cache_clear()
     access_mock.reset()
     app_db.reset_engine()

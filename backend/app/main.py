@@ -1,15 +1,26 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
-from .routers import api_keys, audit_log, auth, consoles, imports, jobs, public_api, settings, stats, system, users, vehicles
+from .routers import api_keys, audit_log, auth, backup, consoles, imports, jobs, public_api, settings, stats, system, users, vehicles
+
+from .services import scheduler
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    scheduler.start()
+    yield
+    scheduler.stop()
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="UniFi Fabric License Plate Importer", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app = FastAPI(title="UniFi Fabric License Plate Importer", docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan)
 
     @app.middleware("http")
     async def csrf_guard(request: Request, call_next):
@@ -22,7 +33,7 @@ def create_app() -> FastAPI:
                 return JSONResponse({"detail": "csrf_check_failed"}, status_code=403)
         return await call_next(request)
 
-    for module in (auth, users, system, settings, audit_log, consoles, vehicles, imports, jobs, stats, api_keys, public_api):
+    for module in (auth, users, system, settings, audit_log, consoles, vehicles, imports, jobs, stats, api_keys, backup, public_api):
         app.include_router(module.router)
 
     @app.get("/api/health", include_in_schema=False)

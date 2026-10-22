@@ -158,7 +158,7 @@ export interface JobLogEntry {
 
 export interface Job {
   id: number;
-  kind: "scan" | "assign" | "remove" | "import";
+  kind: "scan" | "assign" | "remove" | "import" | "backup" | "restore";
   status: "queued" | "running" | "done" | "failed";
   actor_type: string;
   actor: string;
@@ -216,4 +216,62 @@ export interface ApiKey {
   created_by: string;
   created_at: string;
   last_used_at: string | null;
+}
+
+export interface BackupTarget {
+  id: number;
+  name: string;
+  protocol: "ftp" | "ftps" | "scp";
+  host: string;
+  port: number;
+  username: string;
+  password_set: boolean;
+  auth_method: "password" | "key";
+  host_key: string;
+  remote_path: string;
+  ftps_implicit: boolean;
+  verify_tls: boolean;
+  passive: boolean;
+  is_enabled: boolean;
+  last_backup_at: string | null;
+  last_backup_name: string;
+  last_status: "" | "ok" | "failed";
+  last_message: string;
+}
+
+export interface BackupTestResult {
+  ok: boolean;
+  host_key?: string;
+  backups?: number;
+  code?: string | null;
+  message?: string;
+}
+
+export interface BackupSchedule {
+  enabled: boolean;
+  frequency: "hourly" | "daily" | "weekly" | "monthly";
+  time: string;
+  weekday: number;
+  monthday: number;
+}
+
+export interface BackupSettings {
+  passphrase_set: boolean;
+  keep_full: number;
+  schedule_full: BackupSchedule;
+  schedule_incremental: BackupSchedule;
+  notify_email: string;
+  notify_on: "failure" | "always" | "never";
+  ssh_public_key: string;
+  next_runs: { full: string | null; incremental: string | null };
+}
+
+export interface BackupItem {
+  name: string;
+  kind: "full" | "incremental";
+  created_at: string;
+  parent: string | null;
+  size: number | null;
+  restorable: boolean;
+  chain_length: number;
 }
