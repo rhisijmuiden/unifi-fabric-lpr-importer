@@ -55,6 +55,13 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         "notify_email": "",
         "notify_on": "failure",  # failure | always | never
     },
+    "notifications": {
+        # Comma separated addresses that receive the mails below.
+        "recipients": "",
+        "import_report": "failure",  # failure | always | never (CSV and API imports)
+        "sync_failure": True,  # registering or removing plates on a console failed
+        "update_available": True,  # a new version is available on the installed channel
+    },
     "import": {
         # Last used CSV column mapping, offered again on the next import.
         "mapping": {},

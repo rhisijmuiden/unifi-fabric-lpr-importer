@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   BarChart3,
+  Bell,
   Car,
   DatabaseBackup,
   FileUp,
@@ -57,6 +58,7 @@ function useNav(): { title: string; items: NavItem[] }[] {
         { to: "/admin/api-keys", label: t("nav.apiKeys"), icon: PlugZap, roles: ["admin"] },
         { to: "/admin/sso", label: t("nav.sso"), icon: KeyRound, roles: ["admin"] },
         { to: "/admin/mail", label: t("nav.mail"), icon: Mail, roles: ["admin"] },
+        { to: "/admin/notifications", label: t("nav.notifications"), icon: Bell, roles: ["admin"] },
         { to: "/admin/backup", label: t("nav.backup"), icon: DatabaseBackup, roles: ["admin"] },
         { to: "/admin/system", label: t("nav.system"), icon: RefreshCw, roles: ["admin"] },
         { to: "/admin/audit", label: t("nav.audit"), icon: ScrollText, roles: ["admin", "operator"] },

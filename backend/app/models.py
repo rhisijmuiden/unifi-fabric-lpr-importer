@@ -142,6 +142,8 @@ class ApiKey(Base):
     prefix: Mapped[str] = mapped_column(String(16))  # shown in the UI to recognise the key
     key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     allow_delete: Mapped[bool] = mapped_column(Boolean, default=False)
+    # IP addresses or networks (CIDR) the key may be used from; empty = any address.
+    allowed_ips: Mapped[list] = mapped_column(JSON, default=list)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_by: Mapped[str] = mapped_column(String(255), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -159,6 +161,8 @@ class Job(Base):
     actor_type: Mapped[str] = mapped_column(String(20))
     actor: Mapped[str] = mapped_column(String(255))
     params: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Idempotency-Key header of the API request that started the job, so a retry returns the same job.
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     total: Mapped[int] = mapped_column(Integer, default=0)
     processed: Mapped[int] = mapped_column(Integer, default=0)
     succeeded: Mapped[int] = mapped_column(Integer, default=0)

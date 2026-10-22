@@ -212,6 +212,7 @@ export interface ApiKey {
   name: string;
   prefix: string;
   allow_delete: boolean;
+  allowed_ips: string[];
   is_active: boolean;
   created_by: string;
   created_at: string;

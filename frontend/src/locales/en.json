@@ -17,7 +17,8 @@
     "system": "System & updates",
     "audit": "Audit log",
     "apiKeys": "API keys",
-    "backup": "Backup & restore"
+    "backup": "Backup & restore",
+    "notifications": "Notifications"
   },
   "common": {
     "save": "Save",
@@ -424,7 +425,8 @@
       "duplicate": "Duplicate",
       "empty_file": "The file is empty.",
       "too_many_rows": "The file has more than 20,000 rows.",
-      "file_too_large": "The file is larger than 10 MB."
+      "file_too_large": "The file is larger than 10 MB.",
+      "too_long": "Value too long"
     },
     "groups": "Groups",
     "noGroup": "No group",
@@ -513,8 +515,14 @@
     "openDocs": "Open the interactive API documentation",
     "guide": "The integration guide for the supplier is in docs/api.md (English) and docs/api.nl.md (Dutch) in the repository.",
     "errors": {
-      "name_taken": "A key with this name already exists."
-    }
+      "name_taken": "A key with this name already exists.",
+      "invalid_network": "One of the addresses is not a valid IP address or network."
+    },
+    "networks": "Allowed addresses",
+    "networksHint": "IP addresses or networks (CIDR) the key may be used from, separated by commas. Empty = any address.",
+    "networksFor": "Allowed addresses for {{name}}",
+    "anyAddress": "Any address",
+    "_err": "One of the addresses is not a valid IP address or network."
   },
   "backup": {
     "title": "Backup & restore",
@@ -676,6 +684,28 @@
       "confirm_required": "Confirm the restore first.",
       "invalid_file": "This is not a backup file of this application (.lprbak).",
       "too_large": "The files are too large to upload."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Mails about imports, failed changes on the consoles and new versions.",
+    "recipients": "Recipients",
+    "recipientsHint": "Separate several addresses with commas. Mails are sent through the mail server configured under Mail server.",
+    "events": "What to mail",
+    "importReport": "Import report",
+    "importReportHint": "After every CSV import and every delivery through the REST API (Lobster).",
+    "onProblems": "Only when something went wrong",
+    "always": "After every import",
+    "never": "Never",
+    "syncFailure": "Failed sync",
+    "syncFailureHint": "Registering or removing plates on a console failed.",
+    "updateAvailable": "Available update",
+    "updateAvailableHint": "Checked every six hours on the installed channel; mailed once per new version.",
+    "test": "Send test notification",
+    "testHint": "Sends a test mail to the saved recipients. Save first. Server settings:",
+    "errors": {
+      "invalid_address": "One of the recipients is not a valid mail address.",
+      "no_recipients": "Save at least one recipient first."
     }
   }
 }

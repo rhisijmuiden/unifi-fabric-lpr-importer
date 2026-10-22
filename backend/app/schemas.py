@@ -192,14 +192,23 @@ class AccessSettingsIn(BaseModel):
     delete_vehicle_users: bool = True
 
 
+class NotificationSettingsIn(BaseModel):
+    recipients: str = Field(default="", max_length=1000)
+    import_report: str = Field(default="failure", pattern="^(failure|always|never)$")
+    sync_failure: bool = True
+    update_available: bool = True
+
+
 class ApiKeyIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     allow_delete: bool = False
+    allowed_ips: list[str] = Field(default=[], max_length=50)
 
 
 class ApiKeyUpdate(BaseModel):
     allow_delete: bool | None = None
     is_active: bool | None = None
+    allowed_ips: list[str] | None = Field(default=None, max_length=50)
 
 
 class ApiKeyOut(BaseModel):
@@ -209,21 +218,85 @@ class ApiKeyOut(BaseModel):
     name: str
     prefix: str
     allow_delete: bool
+    allowed_ips: list[str]
     is_active: bool
     created_by: str
     created_at: datetime
     last_used_at: datetime | None
 
 
+class ApiVehicleIn(BaseModel):
+    plate: str = Field(default="", description="Required. License plate in any notation, e.g. `12-BDF-3` or `12bdf3`.", examples=["12-BDF-3"])
+    department: str = Field(default="", description="Required. Department; becomes the first name of the UniFi Access user.", examples=["Netwerktransport"])
+    location: str = Field(default="", description="Location (standplaats).", examples=["Wognum"])
+    group_name: str = Field(default="", description="UniFi Access user group. Default: department + location.")
+    description: str = Field(default="", description="Free text, e.g. make and type. Cut off after 255 characters.", examples=["DAF XF"])
+
+
 class ApiVehiclesIn(BaseModel):
     """Vehicles pushed by an external system such as Lobster."""
 
-    vehicles: list[ImportRow] = Field(min_length=1, max_length=20000)
-    # upsert: add and update only. full: also remove vehicles of the same departments that are missing.
-    mode: str = Field(default="upsert", pattern="^(upsert|full)$")
-    # Console ids or names to register on; omitted = all active consoles, [] = store only.
-    consoles: list[int | str] | None = None
-    dry_run: bool = False
+    vehicles: list[ApiVehicleIn] = Field(min_length=1, max_length=20000)
+    mode: str = Field(
+        default="upsert",
+        pattern="^(upsert|full)$",
+        description="`upsert` adds and updates only. `full` also removes vehicles of the same departments that are missing from the list.",
+    )
+    consoles: list[int | str] | None = Field(default=None, description="Console ids or names to register on. Omitted = all active consoles, `[]` = store in the app only.")
+    dry_run: bool = Field(default=False, description="Return what would change without changing anything.")
+
+
+class ApiJobAccepted(BaseModel):
+    job_id: int
+    status: str = Field(examples=["queued"])
+    status_url: str = Field(examples=["/api/v1/jobs/42"])
+    replayed: bool = Field(default=False, description="True when an earlier request with the same Idempotency-Key started this job.")
+
+
+class ApiVehicleOut(BaseModel):
+    plate: str = Field(examples=["12-BDF-3"])
+    department: str
+    location: str
+    group: str
+    description: str
+    source: str = Field(description="Where the vehicle came from: api, csv, manual or console.")
+    consoles: list[str] = Field(description="Names of the consoles the plate is present on.")
+    updated_at: datetime | None
+
+
+class ApiConsoleOut(BaseModel):
+    id: int
+    name: str
+    location: str
+
+
+class ApiStatusOut(BaseModel):
+    status: str = Field(examples=["ok"])
+    version: str
+    key: str = Field(description="Name of the API key used.")
+    allow_delete: bool
+    consoles: int = Field(description="Number of active consoles.")
+
+
+class ApiJobLogEntry(BaseModel):
+    at: str
+    ok: bool
+    message: str
+
+
+class ApiJobOut(BaseModel):
+    id: int
+    kind: str
+    actor: str = Field(description="Name of the API key that started the job.")
+    status: str = Field(description="queued, running, done or failed.")
+    total: int
+    processed: int
+    succeeded: int
+    failed: int
+    result: dict | None
+    created_at: str | None
+    finished_at: str | None
+    log: list[ApiJobLogEntry] = []
 
 
 class BackupTargetIn(BaseModel):

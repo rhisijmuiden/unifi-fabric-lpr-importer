@@ -1,3 +1,4 @@
+import ipaddress
 from collections.abc import Callable
 
 from fastapi import Depends, HTTPException, Request, status
@@ -43,7 +44,25 @@ def api_key(request: Request, db: Session = Depends(get_db)) -> ApiKey:
     key = resolve_api_key(db, token.strip()) if scheme.lower() == "bearer" else None
     if key is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid_api_key", headers={"WWW-Authenticate": "Bearer"})
+    if key.allowed_ips and not ip_allowed(client_ip(request), key.allowed_ips):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "ip_not_allowed")
     return key
+
+
+def ip_allowed(ip: str, networks: list[str]) -> bool:
+    try:
+        address = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    if address.version == 6 and address.ipv4_mapped:
+        address = address.ipv4_mapped
+    for network in networks:
+        try:
+            if address in ipaddress.ip_network(network, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
 
 
 def api_actor(key: ApiKey, request: Request) -> Actor:

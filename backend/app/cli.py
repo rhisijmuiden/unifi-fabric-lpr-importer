@@ -4,6 +4,7 @@
     python -m app.cli reset-password <username>
     python -m app.cli backup [--kind full|incremental]
     python -m app.cli restore [--protocol scp --host nas.local ...] [--file backup.lprbak ...]
+    python -m app.cli openapi [--output ../docs/openapi-v1.json]
 """
 
 import argparse
@@ -44,8 +45,12 @@ def main(argv: list[str] | None = None) -> int:
     restore.add_argument("--name", help="backup to restore (default: ask, newest first)")
     restore.add_argument("--file", action="append", type=Path, help="local backup file; repeat for a full backup plus its incrementals")
     restore.add_argument("--yes", action="store_true", help="do not ask for confirmation")
+    spec = sub.add_parser("openapi", help="write the OpenAPI document of the external API (/api/v1)")
+    spec.add_argument("--output", type=Path, help="file to write (default: print)")
     args = parser.parse_args(argv)
 
+    if args.command == "openapi":
+        return _openapi(args.output)
     db = next(get_db())
     if args.command == "backup":
         return _backup(db, args)
@@ -69,6 +74,20 @@ def main(argv: list[str] | None = None) -> int:
     user.password_hash = hash_password(password)
     db.commit()
     print(f"New password for {user.username}: {password}")
+    return 0
+
+
+def _openapi(output: Path | None) -> int:
+    import json
+
+    from .main import create_app
+    from .routers.public_api import v1_openapi
+
+    text = json.dumps(v1_openapi(create_app()), indent=2, ensure_ascii=False) + "\n"
+    if output is None:
+        print(text, end="")
+    else:
+        output.write_text(text)
     return 0
 
 

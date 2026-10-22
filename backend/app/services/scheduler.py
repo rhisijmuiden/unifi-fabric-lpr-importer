@@ -1,4 +1,4 @@
-"""Runs scheduled full and incremental backups.
+"""Runs scheduled full and incremental backups and the update notification check.
 
 A schedule has a frequency (hourly, daily, weekly, monthly) and a time in the
 server's local time zone. A run is due when the most recent scheduled moment has
@@ -15,7 +15,7 @@ from typing import Any
 from .. import db as app_db
 from ..config import get_settings
 from ..settings_store import get_section
-from . import backup, jobs
+from . import backup, jobs, notify
 
 log = logging.getLogger(__name__)
 
@@ -131,12 +131,21 @@ def tick(now: datetime | None = None) -> str | None:
         db.close()
 
 
+def _update_check() -> None:
+    db = next(app_db.get_db())
+    try:
+        notify.check_update(db)
+    finally:
+        db.close()
+
+
 def _loop() -> None:
     while not _stop.wait(TICK_SECONDS):
-        try:
-            tick()
-        except Exception:  # keep the scheduler alive whatever happens
-            log.exception("backup scheduler tick failed")
+        for task in (tick, _update_check):
+            try:
+                task()
+            except Exception:  # keep the scheduler alive whatever happens
+                log.exception("scheduler task %s failed", task.__name__)
 
 
 def start() -> None:

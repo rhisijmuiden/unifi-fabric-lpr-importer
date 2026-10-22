@@ -12,8 +12,8 @@ department + location, e.g. `Netwerktransport Wognum`). The vehicle list shows p
 present. An import adds and updates by default; a full sync also removes vehicles of the same departments that the
 source no longer lists. Every add and removal on a console is in the audit log with the user or API key.
 
-> Status: phase 3 (backup and restore). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
-> [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)).
+> Status: phase 4 (Lobster REST API and mail notifications). See [ROADMAP.md](ROADMAP.md). API guide for suppliers:
+> [docs/api.md](docs/api.md) ([Nederlands](docs/api.nl.md)), OpenAPI file [docs/openapi-v1.json](docs/openapi-v1.json).
 
 ## Linking a console
 
@@ -99,6 +99,7 @@ brand package is `brand/` in the rhis-website repository.
 - English by default, Dutch translation included
 - Optional Microsoft Entra ID single sign-on
 - Configurable SMTP mail server (STARTTLS/SSL, OAuth2)
+- Mail notifications: import report, failed sync on a console, available update
 - Full and incremental backups to FTP, FTPS and SCP, with restore from remote
 - Info button with version, update check and in-app update
 - Audit log of every change, with who made it (user or API key)
