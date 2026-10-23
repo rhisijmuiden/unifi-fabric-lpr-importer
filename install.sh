@@ -214,8 +214,16 @@ step "Database and role $APP_USER"
 run systemctl enable --now postgresql
 runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$APP_USER'" | grep -q 1 \
   || run runuser -u postgres -- createuser "$APP_USER"
-runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname='$APP_USER'" | grep -q 1 \
-  || run runuser -u postgres -- createdb -O "$APP_USER" "$APP_USER"
+# A container without a generated locale gives a SQL_ASCII cluster; the application needs UTF8.
+# An empty database left by an earlier failed run in SQL_ASCII is recreated.
+DB_ENCODING=$(runuser -u postgres -- psql -tAc "SELECT pg_encoding_to_char(encoding) FROM pg_database WHERE datname='$APP_USER'")
+if [[ -n "$DB_ENCODING" && "$DB_ENCODING" != UTF8 ]] \
+  && ! runuser -u postgres -- psql -d "$APP_USER" -tAc "SELECT 1 FROM pg_tables WHERE schemaname='public' LIMIT 1" | grep -q 1; then
+  run runuser -u postgres -- dropdb "$APP_USER"
+  DB_ENCODING=""
+fi
+[[ -n "$DB_ENCODING" ]] \
+  || run runuser -u postgres -- createdb -O "$APP_USER" -E UTF8 -T template0 --locale=C.UTF-8 "$APP_USER"
 
 # ---------------------------------------------------------------- 5. configuration
 
