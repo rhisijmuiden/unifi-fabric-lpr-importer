@@ -4,19 +4,23 @@ Base URL: https://<console>:12445/api/v1/developer, header `Authorization: Beare
 Every response is `{"code": "SUCCESS", "msg": "...", "data": ...}`; list endpoints
 add `pagination: {page_num, page_size, total}`.
 
-Endpoints used (UniFi Access API reference; license plates need Access 3.3.10+):
-  GET    /users?page_num=&page_size=        list users (incl. license_plates)
-  GET    /users/:id                         one user
-  POST   /users                             create {first_name, last_name}
-  DELETE /users/:id                         delete
-  PUT    /users/:id/license_plates          assign ["AB-123-C", ...]
-  DELETE /users/:id/license_plates/:id      unassign one plate
-  GET    /user_groups                       list groups
-  POST   /user_groups                       create {name}
-  GET    /user_groups/:id/users/all         members of a group
-  POST   /user_groups/:id/users             add [user_id, ...]
+Endpoints used, checked against the official UniFi Access API reference
+(https://assets.identity.ui.com/unifi-access/api_reference.pdf); license plates need Access 3.3.10+:
+  GET    /users?page_num=&page_size=        list users (incl. license_plates)       3.5
+  GET    /users/:id                         one user                                3.4
+  POST   /users                             create {first_name, last_name}          3.2
+  PUT    /users/:id                         update, used for {status: DEACTIVATED}  3.3
+  DELETE /users/:id                         delete; only deactivated users          3.23
+  PUT    /users/:id/license_plates          assign ["AB-123-C", ...]                3.28
+  DELETE /users/:id/license_plates/:id      unassign one plate                      3.29
+  GET    /user_groups                       list groups                             3.12
+  POST   /user_groups                       create {name}; returns no data          3.11
+  GET    /user_groups/:id/users/all         members incl. subgroups                 3.19
+  POST   /user_groups/:id/users             add [user_id, ...]                      3.16
+HTTP 429 means too many requests; those are retried a few times with a pause.
 """
 
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -25,6 +29,14 @@ import httpx
 from ..config import get_settings
 
 PAGE_SIZE = 100
+RETRIES_429 = 3
+
+# Body codes from the reference that deserve their own message in the UI.
+_CODE_ALIASES = {
+    "CODE_OTHERS_UID_ADOPTED_NOT_SUPPORTED": "identity_enterprise",
+    "CODE_AUTH_FAILED": "unauthorized",
+    "CODE_ACCESS_TOKEN_INVALID": "unauthorized",
+}
 
 
 class AccessError(Exception):
@@ -76,15 +88,29 @@ class AccessClient:
     def __exit__(self, *exc: object) -> None:
         self.close()
 
+    def _send(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
+        for attempt in range(RETRIES_429 + 1):
+            try:
+                r = self._http.request(method, path, **kwargs)
+            except httpx.ConnectError as exc:
+                raise AccessError("connection_failed", str(exc)) from exc
+            except httpx.TimeoutException as exc:
+                raise AccessError("timeout", str(exc)) from exc
+            except httpx.HTTPError as exc:
+                raise AccessError("http_error", str(exc)) from exc
+            if r.status_code != 429 or attempt == RETRIES_429:
+                return r
+            try:
+                wait = float(r.headers.get("retry-after", ""))
+            except ValueError:
+                wait = 2.0**attempt
+            time.sleep(min(max(wait, 0.5), 10.0))
+        return r
+
     def _call(self, method: str, path: str, **kwargs: Any) -> Any:
-        try:
-            r = self._http.request(method, path, **kwargs)
-        except httpx.ConnectError as exc:
-            raise AccessError("connection_failed", str(exc)) from exc
-        except httpx.TimeoutException as exc:
-            raise AccessError("timeout", str(exc)) from exc
-        except httpx.HTTPError as exc:
-            raise AccessError("http_error", str(exc)) from exc
+        r = self._send(method, path, **kwargs)
+        if r.status_code == 429:
+            raise AccessError("rate_limited", "the console keeps answering 429 Too Many Requests")
         if r.status_code == 401:
             raise AccessError("unauthorized", "the API token was refused")
         if r.status_code == 403:
@@ -96,7 +122,8 @@ class AccessClient:
         except ValueError as exc:
             raise AccessError("invalid_response", f"HTTP {r.status_code}") from exc
         if r.status_code >= 400 or body.get("code") != "SUCCESS":
-            raise AccessError(str(body.get("code") or f"HTTP_{r.status_code}"), str(body.get("msg") or ""))
+            code = str(body.get("code") or f"HTTP_{r.status_code}")
+            raise AccessError(_CODE_ALIASES.get(code, code), str(body.get("msg") or ""))
         return body
 
     def probe(self) -> dict[str, int]:
@@ -127,6 +154,8 @@ class AccessClient:
         return AccessUser.from_api(data)
 
     def delete_user(self, user_id: str) -> None:
+        # Access only deletes deactivated users (reference 3.23), so deactivate first.
+        self._call("PUT", f"/users/{user_id}", json={"status": "DEACTIVATED"})
         self._call("DELETE", f"/users/{user_id}")
 
     def assign_plates(self, user_id: str, plates: list[str]) -> None:

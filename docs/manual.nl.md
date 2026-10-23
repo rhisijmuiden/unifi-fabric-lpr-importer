@@ -27,7 +27,7 @@ import of een extern systeem zoals Lobster via de REST API.
 ## 1. Hoe het werkt
 
 - Een **voertuig** is een kenteken met een afdeling, een standplaats, een optionele groep en een omschrijving.
-- Een **console** is een UniFi console met UniFi Access (4.2 of nieuwer). De applicatie praat met de lokale Access
+- Een **console** is een UniFi console met UniFi Access (3.3.10 of nieuwer). De applicatie praat met de lokale Access
   API van elke console op poort 12445 met een API-token.
 - Elk voertuig wordt een Access-gebruiker volgens de naamgeving: voornaam = afdeling, achternaam = kenteken,
   gebruikersgroep = afdeling + standplaats (bijvoorbeeld `Netwerktransport Wognum`). Het kenteken wordt als
@@ -276,7 +276,7 @@ Komt de applicatie niet terug, dan wordt automatisch de vorige versie teruggezet
 
 | Probleem | Wat te doen |
 | --- | --- |
-| Console toont *Probleem* | Open **Consoles** en klik **Testen**. Controleer het IP-adres, poort 12445 in de firewall, het token (Access-instellingen) en de Access-versie (4.2+). |
+| Console toont *Probleem* | Open **Consoles** en klik **Testen**. Controleer het IP-adres, poort 12445 in de firewall, het token (Access-instellingen) en de Access-versie (3.3.10+). |
 | Voertuig *ontbreekt* op een console | Selecteer het onder **Voertuigen** en klik **Toewijzen**. Het verslag toont de reden als het mislukt. |
 | Geplande import *mislukt* | Lees de melding op de kaart en open het verslag. *te veel verwijderingen*: controleer de export; verhoog de limiet alleen als de verwijderingen kloppen. |
 | Lobster krijgt `401` | De key is onjuist of uitgeschakeld. `403 ip_not_allowed`: voeg het adres van Lobster toe aan de key. `429`: te veel verzoeken, wacht `Retry-After`. |
