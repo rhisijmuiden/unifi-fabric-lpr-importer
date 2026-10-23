@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Installer for UniFi Fabric License Plate Importer on Debian 13 (VM or physical server).
 #
-#   curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | sudo bash
+#   apt-get update -qq && apt-get install -y -qq curl && curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 #
 # Without options the installer asks for the channel, HTTP or HTTPS and a restore in dialogs.
 #   --branch main|test     production (main) or test channel
@@ -59,9 +59,9 @@ chmod 0600 "$LOG"
 
 UI=text
 if [[ $UNATTENDED -eq 0 ]] && { : </dev/tty; } 2>/dev/null; then
-  if ! command -v whiptail >/dev/null; then
+  if ! command -v whiptail >/dev/null || ! command -v curl >/dev/null; then
     echo "Preparing the installer..."
-    apt-get update -qq >>"$LOG" 2>&1 && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq whiptail >>"$LOG" 2>&1 || true
+    apt-get update -qq >>"$LOG" 2>&1 && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq whiptail curl >>"$LOG" 2>&1 || true
   fi
   command -v whiptail >/dev/null && UI=whiptail
 fi

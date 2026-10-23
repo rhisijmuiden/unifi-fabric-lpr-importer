@@ -28,9 +28,8 @@ must reach the console on port 12445 (HTTPS). Minimum version: UniFi Access 4.2.
 On a fresh Debian 13 VM or physical server, as root:
 
 ```bash
-# a minimal Debian 13 image (such as the Proxmox LXC template) has no curl yet:
-apt-get update && apt-get install -y curl
-curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
+# one line; also works on a bare image without curl (such as the Proxmox LXC template):
+apt-get update -qq && apt-get install -y -qq curl && curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 # or the test channel:
 curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash -s -- --branch test
 ```

@@ -6,7 +6,8 @@
 - **Installer on containers without a locale** (such as the Debian 13 LXC template): the database is now always
   created as UTF8 (`-E UTF8 -T template0 --locale=C.UTF-8`) instead of SQL_ASCII, so step 7 (database migrations)
   no longer fails. An empty SQL_ASCII database left behind by an earlier failed run is recreated.
-- The install instructions now install curl first, which a minimal Debian 13 image does not have.
+- The install instructions are one line that installs curl first, which a minimal Debian 13 image does not have;
+  the installer itself also installs curl (and whiptail) before its first step.
 
 ## 1.0.0 – 2026-10-23
 
