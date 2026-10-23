@@ -47,6 +47,8 @@ on port 12445.
 As root:
 
 ```bash
+# a minimal Debian 13 image (such as the Proxmox LXC template) has no curl yet:
+apt-get update && apt-get install -y curl
 curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 ```
 

@@ -48,6 +48,8 @@ poort 12445 kan bereiken.
 Als root:
 
 ```bash
+# een minimale Debian 13 image (zoals de Proxmox LXC-template) heeft nog geen curl:
+apt-get update && apt-get install -y curl
 curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 ```
 
