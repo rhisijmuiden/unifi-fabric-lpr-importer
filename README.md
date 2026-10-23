@@ -21,7 +21,7 @@ source no longer lists. Every add and removal on a console is in the audit log w
 
 In UniFi Access on each console: **Settings › General › Advanced › API Token**, create a token with view and edit
 rights for users and user groups, then add the console under **Consoles** with its local IP address. This server
-must reach the console on port 12445 (HTTPS). Minimum version: UniFi Access 4.2.
+must reach the console on port 12445 (HTTPS). Minimum version: UniFi Access 3.3.10 (license plates in the Access API).
 
 ## Installation (Debian 13)
 

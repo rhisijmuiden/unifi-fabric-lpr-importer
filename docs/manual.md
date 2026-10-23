@@ -27,7 +27,7 @@ external system such as Lobster through the REST API.
 ## 1. How it works
 
 - A **vehicle** is a license plate with a department, a location (standplaats), an optional group and a description.
-- A **console** is a UniFi console running UniFi Access (4.2 or newer). The application talks to the local Access
+- A **console** is a UniFi console running UniFi Access (3.3.10 or newer). The application talks to the local Access
   API of each console on port 12445 with an API token.
 - Each vehicle becomes an Access user named by convention: first name = department, last name = plate, user group =
   department + location (for example `Netwerktransport Wognum`). The plate is linked to that user as a license plate
@@ -273,7 +273,7 @@ kept in `/var/lib/lpr-importer/pre-update/`.
 
 | Problem | What to do |
 | --- | --- |
-| Console shows *Problem* | Open **Consoles** and click **Test**. Check the IP address, port 12445 in the firewall, the token (Access settings) and the Access version (4.2+). |
+| Console shows *Problem* | Open **Consoles** and click **Test**. Check the IP address, port 12445 in the firewall, the token (Access settings) and the Access version (3.3.10+). |
 | Vehicle *missing* on a console | Select it under **Vehicles** and click **Assign**. The report shows the reason when it fails. |
 | Scheduled import *failed* | Read the message on the card and open the report. *too many removals*: check the export; raise the limit only if the removals are expected. |
 | Lobster gets `401` | The key is wrong or disabled. `403 ip_not_allowed`: add Lobster's address to the key. `429`: too many requests, wait for `Retry-After`. |

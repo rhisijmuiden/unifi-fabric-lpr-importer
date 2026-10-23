@@ -301,8 +301,10 @@
       "forbidden": "Het token heeft te weinig rechten. Geef minimaal lees- en schrijfrechten voor gebruikers.",
       "connection_failed": "De console is niet bereikbaar. Controleer het adres en of poort 12445 openstaat vanaf deze server.",
       "timeout": "De console reageerde niet op tijd. Controleer het adres en de firewall.",
-      "not_found": "Op dit adres is geen Access API gevonden. Controleer of UniFi Access 4.2 of nieuwer op deze console draait.",
-      "http_error": "De verbinding is mislukt. Staat “Certificaat controleren” aan, probeer het dan uit."
+      "not_found": "Op dit adres is geen Access API gevonden. Controleer of UniFi Access 3.3.10 of nieuwer op deze console draait (nodig voor kentekens).",
+      "http_error": "De verbinding is mislukt. Staat “Certificaat controleren” aan, probeer het dan uit.",
+      "rate_limited": "De console meldt “te veel verzoeken”. Wacht een minuut en probeer het opnieuw.",
+      "identity_enterprise": "Deze console gebruikt Identity Enterprise. Daar biedt UniFi de Access API niet aan."
     },
     "connected": "Verbonden",
     "unreachable": "Niet bereikbaar",

@@ -301,8 +301,10 @@
       "forbidden": "The token lacks permissions. Give it at least view and edit rights for users.",
       "connection_failed": "Cannot reach the console. Check the address and that port 12445 is open from this server.",
       "timeout": "The console did not answer in time. Check the address and the firewall.",
-      "not_found": "The Access API was not found on this address. Check that UniFi Access 4.2 or newer runs on this console.",
-      "http_error": "The connection failed. If “Verify the certificate” is on, try it off."
+      "not_found": "The Access API was not found on this address. Check that UniFi Access 3.3.10 or newer runs on this console (needed for license plates).",
+      "http_error": "The connection failed. If “Verify the certificate” is on, try it off.",
+      "rate_limited": "The console answered “too many requests”. Wait a minute and try again.",
+      "identity_enterprise": "This console uses Identity Enterprise. UniFi does not offer the Access API there."
     },
     "connected": "Connected",
     "unreachable": "Unreachable",

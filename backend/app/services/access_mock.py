@@ -78,7 +78,12 @@ class FakeAccess:
                 return missing()
             if len(parts) == 2 and method == "GET":
                 return ok(user)
+            if len(parts) == 2 and method == "PUT":
+                user.update({k: v for k, v in body.items() if k in ("first_name", "last_name", "status")})
+                return ok()
             if len(parts) == 2 and method == "DELETE":
+                if user.get("status") != "DEACTIVATED":
+                    return httpx.Response(200, json={"code": "CODE_OPERATION_FORBIDDEN", "msg": "only deactivated users can be deleted"})
                 del self.users[parts[1]]
                 for g in self.groups.values():
                     g["members"].discard(parts[1])
@@ -96,8 +101,8 @@ class FakeAccess:
         if parts == ["user_groups"] and method == "GET":
             return ok([{"id": g["id"], "name": g["name"], "up_id": ""} for g in self.groups.values()])
         if parts == ["user_groups"] and method == "POST":
-            g = self._group(body["name"])
-            return ok({"id": g["id"], "name": g["name"]})
+            self._group(body["name"])
+            return httpx.Response(200, json={"code": "SUCCESS", "msg": "success"})  # no data, as in the reference
         if len(parts) >= 3 and parts[0] == "user_groups":
             group = self.groups.get(parts[1])
             if group is None:
