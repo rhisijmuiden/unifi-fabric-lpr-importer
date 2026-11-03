@@ -32,7 +32,7 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const config = useQuery({
     queryKey: ["auth-config"],
-    queryFn: () => api<{ sso_enabled: boolean; local_login: boolean }>("/auth/config"),
+    queryFn: () => api<{ sso_enabled: boolean; local_login: boolean; license: string; source_url: string }>("/auth/config"),
   });
 
   if (me) return <Navigate to="/" replace />;
@@ -112,6 +112,14 @@ export function LoginPage() {
               </form>
             )}
           </div>
+          {config.data?.source_url && (
+            <p className="mt-10 text-center text-xs text-muted">
+              {t("info.license")} GNU AGPL-3.0 ·{" "}
+              <a href={config.data.source_url} target="_blank" rel="noreferrer" className="hover:underline">
+                {t("info.sourceLink")}
+              </a>
+            </p>
+          )}
         </div>
       </div>
     </div>

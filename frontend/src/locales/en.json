@@ -232,7 +232,10 @@
   "info": {
     "title": "About",
     "button": "Info",
-    "openSystem": "Open System & updates"
+    "openSystem": "Open System & updates",
+    "license": "Free software, licensed under the",
+    "source": "Source code:",
+    "sourceLink": "Source code"
   },
   "audit": {
     "title": "Audit log",

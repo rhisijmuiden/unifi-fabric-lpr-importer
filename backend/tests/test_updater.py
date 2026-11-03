@@ -69,3 +69,23 @@ def test_update_endpoint_audited(repos, admin_client):
     assert admin_client.post("/api/system/update", json={"channel": "test"}).status_code == 202
     actions = [i["action"] for i in admin_client.get("/api/audit").json()["items"]]
     assert "system.switch_channel" in actions
+
+
+@pytest.mark.parametrize(
+    "remote, expected",
+    [
+        ("https://github.com/acme/lpr.git", "https://github.com/acme/lpr"),
+        ("https://user:token@github.com/acme/lpr.git", "https://github.com/acme/lpr"),
+        ("git@github.com:acme/lpr.git", "https://github.com/acme/lpr"),
+        ("/srv/git/lpr.git", None),
+    ],
+)
+def test_public_url_strips_credentials(remote, expected):
+    assert updater._public_url(remote) == expected
+
+
+def test_info_has_license_and_source(repos):
+    info = updater.local_info()
+    assert info["license"] == "AGPL-3.0-or-later"
+    # The test checkout's origin is a local path, so the default repository is offered.
+    assert info["source_url"] == updater.DEFAULT_SOURCE_URL

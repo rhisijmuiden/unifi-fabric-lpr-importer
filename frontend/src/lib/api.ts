@@ -47,6 +47,8 @@ export interface SystemInfo {
   channel: string | null;
   commit: string | null;
   commit_date: string | null;
+  license: string;
+  source_url: string;
   python: string;
   uptime_seconds: number;
 }
