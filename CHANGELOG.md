@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **License**: the software is now licensed under the GNU Affero General Public License v3.0 or later
+  (`AGPL-3.0-or-later`, see `LICENSE`). The Info dialog and the login page show the license and link to the source code
+  of the running installation, as section 13 of the AGPL asks for network applications.
+
 ## 1.0.1 – 2026-10-23
 
 ### Fixed

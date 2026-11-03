@@ -232,7 +232,10 @@
   "info": {
     "title": "Over deze applicatie",
     "button": "Info",
-    "openSystem": "Open Systeem & updates"
+    "openSystem": "Open Systeem & updates",
+    "license": "Vrije software, gelicenseerd onder de",
+    "source": "Broncode:",
+    "sourceLink": "Broncode"
   },
   "audit": {
     "title": "Auditlog",

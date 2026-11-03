@@ -16,6 +16,9 @@ from ..config import get_settings
 
 CHANNELS = {"main": "production", "test": "test"}
 
+LICENSE = "AGPL-3.0-or-later"
+DEFAULT_SOURCE_URL = "https://github.com/rhisijmuiden/unifi-fabric-lpr-importer"
+
 
 class UpdateError(Exception):
     pass
@@ -41,6 +44,27 @@ def _read_version(path: Path) -> str:
         return "0.0.0"
 
 
+def _public_url(remote: str) -> str | None:
+    """Turn a git remote into a browsable https URL without credentials."""
+    remote = remote.strip()
+    if remote.startswith("git@") and ":" in remote:  # git@host:owner/repo.git
+        host, path = remote[4:].split(":", 1)
+        remote = f"https://{host}/{path}"
+    if not remote.startswith(("https://", "http://")):
+        return None
+    host, _, path = remote.split("://", 1)[1].partition("/")
+    url = f"https://{host.rsplit('@', 1)[-1]}/{path}"
+    return url[:-4] if url.endswith(".git") else url
+
+
+def source_url() -> str:
+    """Where users can get the source of this installation (AGPL-3.0 section 13)."""
+    try:
+        return _public_url(_git("remote", "get-url", "origin")) or DEFAULT_SOURCE_URL
+    except (UpdateError, OSError, subprocess.TimeoutExpired):
+        return DEFAULT_SOURCE_URL
+
+
 def local_info() -> dict[str, Any]:
     settings = get_settings()
     info: dict[str, Any] = {
@@ -48,6 +72,8 @@ def local_info() -> dict[str, Any]:
         "channel": None,
         "commit": None,
         "commit_date": None,
+        "license": LICENSE,
+        "source_url": source_url(),
     }
     try:
         info["channel"] = _git("rev-parse", "--abbrev-ref", "HEAD")

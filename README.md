@@ -121,8 +121,32 @@ brand package is `brand/` in the rhis-website repository.
 | `main` | Production releases |
 | `test` | Test releases, merged into `main` after approval |
 
+## License
+
+Copyright (C) 2026 RHIS
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+[GNU Affero General Public License](LICENSE) as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version (SPDX: `AGPL-3.0-or-later`).
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
+
+Because the application is used over a network, section 13 of the AGPL applies: if you run a modified version, you
+must offer its users the corresponding source code. The Info dialog and the login page link to the source of the
+running installation (the `origin` remote of the installed checkout, without credentials), so a fork that is
+installed from its own repository points to that repository automatically.
+
 ---
 
 ## Nederlands
 
 Webapplicatie die bedrijfswagens als UniFi Access-gebruikers met gekoppeld kenteken registreert op elke console, via de lokale UniFi Access API, zodat de slagbomen op alle locaties voor ze opengaan. Voertuigen komen binnen via CSV-import, geplande imports of de REST API (bijvoorbeeld vanuit Lobster). De volledige handleiding staat in [docs/manual.nl.md](docs/manual.nl.md); installeren gaat met de grafische installer hierboven.
+
+### Licentie
+
+Deze software valt onder de [GNU Affero General Public License v3.0 of later](LICENSE) (`AGPL-3.0-or-later`). Je mag
+de software gebruiken, aanpassen en verspreiden, maar wie een aangepaste versie via het netwerk aanbiedt, moet de
+gebruikers ook de broncode van die versie aanbieden. Het Info-venster en de inlogpagina linken daarom naar de broncode
+van de draaiende installatie.

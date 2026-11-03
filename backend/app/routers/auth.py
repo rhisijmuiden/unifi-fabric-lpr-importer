@@ -22,7 +22,7 @@ from ..security import (
     verify_password,
     verify_password_timed,
 )
-from ..services import entra, ratelimit
+from ..services import entra, ratelimit, updater
 from ..settings_store import get_section
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -46,7 +46,12 @@ def _set_session_cookie(db: Session, response: Response, token: str) -> None:
 @router.get("/config")
 def auth_config(db: Session = Depends(get_db)) -> dict:
     sso = get_section(db, "sso")
-    return {"sso_enabled": bool(sso["enabled"]), "local_login": bool(sso["allow_local_login"] or not sso["enabled"])}
+    return {
+        "sso_enabled": bool(sso["enabled"]),
+        "local_login": bool(sso["allow_local_login"] or not sso["enabled"]),
+        "license": updater.LICENSE,
+        "source_url": updater.source_url(),
+    }
 
 
 def _new_session(db: Session, user: User, request: Request) -> str:
