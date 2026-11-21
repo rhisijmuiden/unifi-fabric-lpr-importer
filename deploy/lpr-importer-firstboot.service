@@ -1,0 +1,18 @@
+# Only in the Proxmox LXC template: finishes the installation on the first start of a new container
+# (database, secret key, first admin account) and shows the sign-in on the console.
+[Unit]
+Description=UniFi Fabric License Plate Importer - first start of a new container
+ConditionPathExists=/var/lib/lpr-importer/firstboot-pending
+Wants=network-online.target
+After=network-online.target
+Before=lpr-importer.service getty.target console-getty.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/lpr-importer/install.sh --firstboot
+RemainAfterExit=yes
+TimeoutStartSec=900
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

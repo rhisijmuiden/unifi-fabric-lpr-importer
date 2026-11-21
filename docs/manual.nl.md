@@ -42,48 +42,85 @@ van dezelfde afdelingen die de bron niet meer noemt, uit de app en van elke cons
 
 ## 2. Installatie
 
-Benodigd: een Debian 13 VM of fysieke server (2 CPU, 2 GB RAM, 10 GB schijf is ruim voldoende) die de consoles op
-poort 12445 kan bereiken.
+Benodigd: Debian 13 op een VM, een fysieke server of een Proxmox LXC-container (2 CPU, 2 GB RAM, 8 GB schijf is ruim
+voldoende) die de consoles op poort 12445 kan bereiken. Er zijn twee manieren; beide eindigen met alleen het
+webadres, de gebruikersnaam en een gegenereerd wachtwoord. Al het andere stel je in de webinterface in.
+
+### Proxmox: kant-en-klare containertemplate
+
+1. Open in Proxmox de opslag voor templates (meestal **local**) › **CT Templates** › **Download from URL**.
+2. Plak deze URL, klik op **Query URL** en daarna op **Download**:
+   `https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/latest/download/debian-13-lpr-importer_amd64.tar.zst`
+   (testkanaal: `https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/download/template-test/debian-13-lpr-importer-test_amd64.tar.zst`).
+3. **Create CT** met deze template: unprivileged, nesting aan (standaard), 2 cores, 2048 MB geheugen, 8 GB schijf,
+   netwerk met DHCP of een vast adres.
+4. Start de container en open de **Console**. Na ongeveer een minuut staan het adres, de gebruikersnaam en het
+   wachtwoord boven de inlogprompt.
+
+De eigen templatelijst van Proxmox (de knop **Templates**) toont alleen templates van Proxmox en TurnKey; deze
+download je daarom via de URL. Of doe alles in één keer op de Proxmox-host (als root):
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/scripts/proxmox-create-ct.sh)"
+```
+
+Dit downloadt de template, maakt en start de container en toont het adres, de gebruikersnaam en het wachtwoord.
+Opties zoals `--id 120 --ip 10.10.4.65/24 --gw 10.10.4.1 --storage local-lvm --channel test` staan in `--help`.
+
+De template wordt bij elke release opnieuw gebouwd, dus een nieuwe container start op de nieuwste versie. Een
+draaiende container werkt zichzelf bij via **Systeem & updates**, net als elke andere installatie.
+
+### Kale Debian 13 (VM, fysieke server of container)
 
 Als root:
 
 ```bash
-# één regel; werkt ook op een kale image zonder curl (zoals de Proxmox LXC-template):
 apt-get update -qq && apt-get install -y -qq curl && curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 ```
 
-De installer opent schermen en vraagt:
+De installer vraagt niets. Hij toont een regel per stap (pakketten, applicatie, database, configuratie, bouwen,
+service, beheerdersaccount) en eindigt met:
 
-1. **Kanaal**: productie (`main`, aanbevolen) of test (`test`).
-2. **Webtoegang** op poort 8080: gewone HTTP, HTTPS met een zelfondertekend certificaat, of HTTPS met een eigen
-   certificaat (PEM-bestanden). Kies HTTPS als Lobster of andere systemen via internet verbinden.
-3. Daarna een **back-up terugzetten** (voor een server die een oude vervangt, zie [hoofdstuk 11](#11-back-up-en-herstel)).
+```
+  Web interface:  http://10.10.4.65:8080
+  Username:       admin
+  Password:       <gegenereerd>
+```
 
-Een voortgangsbalk toont in welke stap de installer is (stap 1 tot 10: pakketten, systeemgebruiker, applicatie,
-PostgreSQL, configuratie, HTTP/HTTPS, bouwen, services, herstel, beheerdersaccount). Aan het eind toont hij het adres
-en het eerste beheerderswachtwoord. Wijzig dat wachtwoord na het inloggen.
-
-Zonder terminal, of met `--unattended`, draait de installer zonder schermen. Opties:
+Opties voor installaties via een script:
 
 | Optie | Betekenis |
 | --- | --- |
-| `--branch main\|test` | Kanaal |
+| `--branch main\|test` | Kanaal (standaard productie, of het huidige kanaal bij opnieuw draaien) |
 | `--https` | HTTPS op poort 8080 met een zelfondertekend certificaat |
 | `--cert BESTAND --key BESTAND` | HTTPS op poort 8080 met een eigen certificaat |
 | `--http` | Gewone HTTP op poort 8080 |
-| `--restore` | Na de installatie een back-up terugzetten |
-| `--unattended` | Geen schermen of vragen |
+| `--restore` | Na de installatie een back-up terugzetten via de opdrachtregel |
 
-De installer opnieuw draaien is veilig: configuratie, gegevens en accounts blijven behouden. Gebruik hem om te
-wisselen tussen HTTP en HTTPS of om het certificaat te vervangen, bijvoorbeeld
-`bash /opt/lpr-importer/install.sh --cert /root/nieuw.pem --key /root/nieuw.key`.
+De installer opnieuw draaien is veilig: configuratie, gegevens en accounts blijven behouden.
+
+### Eerste keer inloggen: de installatie afronden
+
+De eerste keer inloggen met het gegenereerde wachtwoord opent de installatiewizard in de webinterface:
+
+1. **Taal** (Engels of Nederlands).
+2. **Je account**: een nieuw wachtwoord in plaats van het gegenereerde, en optioneel een e-mailadres.
+3. **Webadres en HTTPS**: de hostnaam of het IP-adres dat gebruikers gebruiken, en HTTP, HTTPS met een
+   zelfondertekend certificaat of HTTPS met een eigen certificaat (plak of upload de PEM-bestanden). Kies HTTPS als
+   Lobster of andere systemen via internet verbinden.
+4. **Updatekanaal**: productie of test.
+5. **Nieuw beginnen of een back-up herstellen** van een eerdere server (zie [hoofdstuk 11](#11-back-up-en-herstel)).
+
+Na **Installatie afronden** past de applicatie de instellingen toe, herstart en opent op het nieuwe adres. Het
+gegenereerde wachtwoord verdwijnt dan ook van de console. Webadres en HTTPS wijzig je later onder
+**Systeem & updates** › **Webadres & HTTPS**.
 
 | Pad | Inhoud |
 | --- | --- |
 | `/etc/lpr-importer/lpr-importer.env` | Configuratie (database, geheime sleutel, adres, HTTPS) |
 | `/etc/lpr-importer/tls/` | HTTPS-certificaat en sleutel |
 | `/var/lib/lpr-importer/` | Updatestatus en -log, databasesnapshots voor updates, status van back-ups en planningen |
-| `/var/log/lpr-importer-install.log` | Log van de laatste installatie |
+| `/var/log/lpr-importer-install.log` | Log van de installer (en van de eerste start van een container) |
 | `journalctl -u lpr-importer -f` | Applicatielog |
 
 ## 3. Consoles koppelen
@@ -234,7 +271,7 @@ back-up terugzetten gebruikt de bijbehorende volledige back-up en de incrementel
 kopie van de huidige gegevens bewaard in `/var/lib/lpr-importer/backup/pre-restore/`. Er verandert niets op de UniFi
 consoles.
 
-**Nieuwe server**: installeer met `--restore` (of kies *Terugzetten* in het installatiescherm). De installer vraagt
+**Nieuwe server**: installeer met `--restore` (of kies *Back-up herstellen* in de installatiewizard in de webinterface). De installer vraagt
 om de back-uplocatie en de wachtzin. Wachtwoorden en tokens in de back-up worden opnieuw versleuteld met de geheime
 sleutel van de nieuwe server.
 

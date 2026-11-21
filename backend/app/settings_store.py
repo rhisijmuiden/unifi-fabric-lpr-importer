@@ -75,6 +75,12 @@ DEFAULTS: dict[str, dict[str, Any]] = {
         # Requests per minute per API key on the REST API (/api/v1).
         "api_requests_per_minute": 600,
     },
+    "setup": {
+        # True from the installer's first admin account until the first-run setup in the web interface is done.
+        "pending": False,
+        "completed_at": "",
+        "completed_by": "",
+    },
     "import": {
         # Last used CSV column mapping, offered again on the next import.
         "mapping": {},

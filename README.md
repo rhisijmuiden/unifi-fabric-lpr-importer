@@ -23,22 +23,34 @@ In UniFi Access on each console: **Settings › General › Advanced › API Tok
 rights for users and user groups, then add the console under **Consoles** with its local IP address. This server
 must reach the console on port 12445 (HTTPS). Minimum version: UniFi Access 3.3.10 (license plates in the Access API).
 
-## Installation (Debian 13)
+## Installation (Debian 13 or Proxmox LXC)
 
-On a fresh Debian 13 VM or physical server, as root:
+**Proxmox**: in the template storage (usually *local*) › **CT Templates** › **Download from URL**, paste
+`https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/latest/download/debian-13-lpr-importer_amd64.tar.zst`,
+then create a container from it (unprivileged, nesting on, 2 cores, 2 GB RAM, 8 GB disk) and start it. Its console
+shows the address, username and password after the first start. Or on the Proxmox host, in one go:
 
 ```bash
-# one line; also works on a bare image without curl (such as the Proxmox LXC template):
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/scripts/proxmox-create-ct.sh)"
+```
+
+**Bare Debian 13** (VM, physical server or container), as root:
+
+```bash
 apt-get update -qq && apt-get install -y -qq curl && curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 # or the test channel:
 curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash -s -- --branch test
 ```
 
-The installer is graphical (whiptail): it asks for the channel, HTTP or HTTPS and whether to restore a backup, shows
-which of its 10 steps it is in, and ends with the address and the first admin password. It installs PostgreSQL,
-Python and Node.js, builds the app into `/opt/lpr-importer` and starts the `lpr-importer` service on port 8080.
-Running it again is safe. Options for scripted installs: `--branch main|test`, `--https` (self-signed certificate),
-`--cert FILE --key FILE` (own certificate), `--http`, `--restore`, `--unattended`.
+The installer asks nothing and ends with only the web address (`http://<ip>:8080`), the username and a generated
+password. It installs PostgreSQL, Python and Node.js, builds the app into `/opt/lpr-importer` and starts the
+`lpr-importer` service on port 8080. Running it again is safe. Options: `--branch main|test`, `--https`,
+`--cert FILE --key FILE`, `--http`, `--restore`.
+
+The first sign-in opens the **setup** in the web interface: own password, web address and HTTP/HTTPS (self-signed or
+own certificate), update channel, and start fresh or restore a backup. Web address and HTTPS can be changed later under
+**System & updates**. The template is built by `.github/workflows/lxc-template.yml` (`scripts/build-lxc-template.sh`)
+on every change to `main` (release `v<VERSION>`) and `test` (pre-release `template-test`).
 
 | Path | Contents |
 | --- | --- |
@@ -101,7 +113,8 @@ brand package is `brand/` in the rhis-website repository.
 
 ## Standard features
 
-- Installer for Debian 13 (VM or physical server)
+- Installer for Debian 13 (VM, physical server or container) and a ready-made Proxmox LXC template
+- First-run setup in the web interface (password, web address, HTTPS, channel, restore)
 - Web interface on port 8080, modern UI with the admin menu on the left
 - English by default, Dutch translation included
 - Optional Microsoft Entra ID single sign-on

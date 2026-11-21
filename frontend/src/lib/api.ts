@@ -385,3 +385,28 @@ export interface SecuritySettings {
   cookie_secure: boolean;
   secret_key_ok: boolean;
 }
+
+export type WebMode = "http" | "selfsigned" | "own" | "keep";
+
+export interface WebInfo {
+  base_url: string;
+  host: string;
+  port: number;
+  https: boolean;
+  mode: "http" | "selfsigned" | "own";
+  certificate: { subject: string; issuer: string; self_signed: boolean; not_after: string; names: string[] } | null;
+  status: { state: "idle" | "running" | "success" | "failed"; message?: string };
+}
+
+export interface SetupStatus {
+  pending: boolean;
+  web?: WebInfo;
+  channel?: string | null;
+}
+
+export interface WebChange {
+  mode: WebMode;
+  host: string;
+  cert_pem: string;
+  key_pem: string;
+}

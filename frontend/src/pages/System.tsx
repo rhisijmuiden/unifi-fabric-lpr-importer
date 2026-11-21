@@ -4,6 +4,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { useSystemInfo } from "@/lib/system";
 import { UpdatePanel } from "@/components/UpdatePanel";
+import { WebAccessCard } from "@/components/WebAccessCard";
 
 function duration(seconds: number) {
   const d = Math.floor(seconds / 86400);
@@ -48,6 +49,7 @@ export function SystemPage() {
             <UpdatePanel />
           </CardBody>
         </Card>
+        <WebAccessCard />
       </div>
     </>
   );

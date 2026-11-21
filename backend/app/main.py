@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
-from .routers import api_keys, audit_log, auth, backup, consoles, dashboard, import_schedules, imports, jobs, public_api, security, settings, stats, system, users, vehicles
+from .routers import api_keys, audit_log, auth, backup, consoles, dashboard, import_schedules, imports, jobs, public_api, security, settings, setup, stats, system, users, vehicles
 from .services import scheduler
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -71,7 +71,7 @@ def create_app() -> FastAPI:
             response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
         return response
 
-    for module in (auth, users, system, settings, audit_log, consoles, vehicles, import_schedules, imports, jobs, dashboard, stats, api_keys, backup, security, public_api):
+    for module in (auth, users, system, settings, audit_log, consoles, vehicles, import_schedules, imports, jobs, dashboard, stats, api_keys, backup, security, setup, public_api):
         app.include_router(module.router)
 
     @app.get("/api/health", include_in_schema=False)
