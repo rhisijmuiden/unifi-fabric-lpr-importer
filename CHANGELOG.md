@@ -1,8 +1,22 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 – 2026-11-21
 
 ### Added
+- **Proxmox LXC template** (Debian 13) with the application installed, published as a release asset on every change
+  to `main` (and as pre-release `template-test` for the test channel). Download it in Proxmox under CT Templates ›
+  Download from URL. A new container finishes the installation on its first start (own database, secret key, first
+  admin) and shows the address, username and password on its console.
+- `scripts/proxmox-create-ct.sh`: on the Proxmox host, downloads the template, creates and starts the container and
+  prints the sign-in.
+- **Setup in the web interface** on the first sign-in: own password, language, web address, HTTP / HTTPS
+  (self-signed or own certificate, paste or upload), update channel, start fresh or restore a backup.
+- **System & updates › Web address & HTTPS**: change the address or certificate later; the app restarts and opens on
+  the new address.
+
+### Changed
+- The installer asks nothing any more (no dialogs) and works the same on a bare Debian 13 server, VM or container.
+  It ends with only the web address, username and password. `--unattended` is still accepted but no longer needed.
 - **License**: the software is now licensed under the GNU Affero General Public License v3.0 or later
   (`AGPL-3.0-or-later`, see `LICENSE`). The Info dialog and the login page show the license and link to the source code
   of the running installation, as section 13 of the AGPL asks for network applications.

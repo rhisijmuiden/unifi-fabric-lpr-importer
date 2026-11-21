@@ -6,6 +6,7 @@ import "./index.css";
 import "./i18n";
 import { useMe } from "@/lib/auth";
 import type { Role } from "@/lib/api";
+import { useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoginPage } from "@/pages/Login";
 import { DashboardPage } from "@/pages/Dashboard";
@@ -23,19 +24,32 @@ import { BackupPage } from "@/pages/Backup";
 import { NotificationsPage } from "@/pages/Notifications";
 import { ImportSchedulesPage } from "@/pages/ImportSchedules";
 import { SecurityPage } from "@/pages/Security";
+import { SetupPage } from "@/pages/Setup";
+import { api, type SetupStatus } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { setLanguage } from "@/i18n";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
 
-function RequireAuth({ children, roles }: { children: ReactNode; roles?: Role[] }) {
+function RequireAuth({ children, roles, setup }: { children: ReactNode; roles?: Role[]; setup?: boolean }) {
   const { data: me, isLoading } = useMe();
+  const location = useLocation();
+  // A new installation: the first admin goes through the setup wizard before anything else.
+  const setupStatus = useQuery({
+    queryKey: ["setup-status"],
+    queryFn: () => api<SetupStatus>("/setup/status"),
+    enabled: me?.role === "admin",
+    staleTime: Infinity,
+  });
   useEffect(() => {
     if (me) setLanguage(me.language);
   }, [me?.language]); // eslint-disable-line react-hooks/exhaustive-deps
   if (isLoading) return null;
   if (!me) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(me.role)) return <Navigate to="/" replace />;
+  if (me.role === "admin" && setupStatus.isLoading) return null;
+  if (!setup && setupStatus.data?.pending && location.pathname !== "/setup") return <Navigate to="/setup" replace />;
   return <>{children}</>;
 }
 
@@ -45,6 +59,7 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/setup" element={<RequireAuth roles={["admin"]} setup><SetupPage /></RequireAuth>} />
           <Route
             element={
               <RequireAuth>

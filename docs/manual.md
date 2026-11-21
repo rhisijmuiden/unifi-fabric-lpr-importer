@@ -41,47 +41,85 @@ the source no longer lists, from the app and from every console.
 
 ## 2. Installation
 
-Requirements: a Debian 13 VM or physical server (2 CPU, 2 GB RAM, 10 GB disk is plenty) that can reach the consoles
-on port 12445.
+Requirements: Debian 13 on a VM, a physical server or a Proxmox LXC container (2 CPU, 2 GB RAM, 8 GB disk is
+plenty) that can reach the consoles on port 12445. There are two ways to install; both end with only the web
+address, the username and a generated password. Everything else is set up in the web interface.
+
+### Proxmox: ready-made container template
+
+1. In Proxmox, open the storage for templates (usually **local**) › **CT Templates** › **Download from URL**.
+2. Paste this URL, click **Query URL** and then **Download**:
+   `https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/latest/download/debian-13-lpr-importer_amd64.tar.zst`
+   (test channel: `https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/download/template-test/debian-13-lpr-importer-test_amd64.tar.zst`).
+3. **Create CT** with this template: unprivileged, nesting on (the default), 2 cores, 2048 MB memory, 8 GB disk,
+   network with DHCP or a fixed address.
+4. Start the container and open its **Console**. After about a minute it shows the address, the username and the
+   password above the login prompt.
+
+Proxmox's own template list (the **Templates** button) only shows Proxmox's and TurnKey's templates, so this one is
+downloaded from its URL. Or do all of it in one go on the Proxmox host (as root):
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/scripts/proxmox-create-ct.sh)"
+```
+
+It downloads the template, creates and starts the container and prints the address, username and password. Options
+such as `--id 120 --ip 10.10.4.65/24 --gw 10.10.4.1 --storage local-lvm --channel test` are listed with `--help`.
+
+The template is rebuilt on every release, so a new container starts on the latest version. A running container
+updates itself from **System & updates**, like any other installation.
+
+### Bare Debian 13 (VM, physical server or container)
 
 As root:
 
 ```bash
-# one line; also works on a bare image without curl (such as the Proxmox LXC template):
 apt-get update -qq && apt-get install -y -qq curl && curl -fsSL https://raw.githubusercontent.com/rhisijmuiden/unifi-fabric-lpr-importer/main/install.sh | bash
 ```
 
-The installer opens dialogs and asks:
+The installer asks nothing. It shows a line per step (packages, application, database, configuration, build,
+service, admin account) and ends with:
 
-1. **Channel**: production (`main`, recommended) or test (`test`).
-2. **Web access** on port 8080: plain HTTP, HTTPS with a self-signed certificate, or HTTPS with your own certificate
-   (PEM files). Choose HTTPS when Lobster or other systems connect over the internet.
-3. **Restore a backup** afterwards (for a server that replaces an old one, see [section 11](#11-backup-and-restore)).
+```
+  Web interface:  http://10.10.4.65:8080
+  Username:       admin
+  Password:       <generated>
+```
 
-A progress bar shows the step it is in (step 1 to 10: packages, system user, application, PostgreSQL,
-configuration, HTTP/HTTPS, build, services, restore, admin account). At the end it shows the address and the first
-admin password. Change that password after signing in (click your name at the top right, or **Users**).
-
-Without a terminal, or with `--unattended`, the installer runs without dialogs. Options:
+Options for scripted installs:
 
 | Option | Meaning |
 | --- | --- |
-| `--branch main\|test` | Channel |
+| `--branch main\|test` | Channel (default production, or the current channel when run again) |
 | `--https` | HTTPS on port 8080 with a self-signed certificate |
 | `--cert FILE --key FILE` | HTTPS on port 8080 with your own certificate |
 | `--http` | Plain HTTP on port 8080 |
-| `--restore` | Restore a backup after installing |
-| `--unattended` | No dialogs or questions |
+| `--restore` | Restore a backup from the command line after installing |
 
-Running the installer again is safe: configuration, data and accounts are kept. Use it to switch between HTTP and
-HTTPS or to replace the certificate, for example `bash /opt/lpr-importer/install.sh --cert /root/new.pem --key /root/new.key`.
+Running the installer again is safe: configuration, data and accounts are kept.
+
+### First sign-in: the setup
+
+The first sign-in with the generated password opens the setup in the web interface:
+
+1. **Language** (English or Dutch).
+2. **Your account**: a new password instead of the generated one, and an optional e-mail address.
+3. **Web address and HTTPS**: the host name or IP address people use, and HTTP, HTTPS with a self-signed certificate
+   or HTTPS with your own certificate (paste or upload the PEM files). Choose HTTPS when Lobster or other systems
+   connect over the internet.
+4. **Update channel**: production or test.
+5. **Start fresh or restore** a backup of an earlier server (see [section 11](#11-backup-and-restore)).
+
+After **Finish the setup** the application applies the settings, restarts and opens on its new address. The
+generated password then also disappears from the console. Web address and HTTPS can be changed later under
+**System & updates** › **Web address & HTTPS**.
 
 | Path | Contents |
 | --- | --- |
 | `/etc/lpr-importer/lpr-importer.env` | Configuration (database, secret key, address, HTTPS) |
 | `/etc/lpr-importer/tls/` | HTTPS certificate and key |
 | `/var/lib/lpr-importer/` | Update status and log, database snapshots before updates, backup and schedule state |
-| `/var/log/lpr-importer-install.log` | Log of the last installer run |
+| `/var/log/lpr-importer-install.log` | Log of the installer (and of the first start of a container) |
 | `journalctl -u lpr-importer -f` | Application log |
 
 ## 3. Linking the consoles
@@ -230,7 +268,7 @@ Backup results are mailed according to the setting on the Backup page.
 its full backup and the incrementals in between. A copy of the current data is saved first in
 `/var/lib/lpr-importer/backup/pre-restore/`. Nothing changes on the UniFi consoles.
 
-**New server**: install with `--restore` (or choose *Restore* in the installer dialog). The installer asks for the
+**New server**: install with `--restore` (or choose *Restore a backup* in the setup in the web interface). The installer asks for the
 backup location and the passphrase. Passwords and tokens in the backup are re-encrypted with the new server's secret
 key.
 

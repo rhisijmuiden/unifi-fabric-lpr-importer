@@ -1,0 +1,62 @@
+# Builds the Proxmox LXC container template and publishes it as a GitHub release asset.
+#   main -> release v<VERSION> (latest):
+#     https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/latest/download/debian-13-lpr-importer_amd64.tar.zst
+#   test -> pre-release "template-test":
+#     https://github.com/rhisijmuiden/unifi-fabric-lpr-importer/releases/download/template-test/debian-13-lpr-importer-test_amd64.tar.zst
+name: LXC template
+
+on:
+  push:
+    branches: [main, test]
+    paths-ignore: ["**.md", "docs/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lxc-template-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mmdebstrap zstd
+          # Ubuntu's keyring predates Debian 13: take the current one from Debian.
+          pool=http://deb.debian.org/debian/pool/main/d/debian-archive-keyring
+          deb=$(curl -fsSL "$pool/" | grep -o 'debian-archive-keyring_[0-9.]*_all.deb' | sort -V | tail -n1)
+          curl -fsSL -o /tmp/keyring.deb "$pool/$deb"
+          dpkg-deb -x /tmp/keyring.deb /tmp/keyring
+
+      - name: Build template
+        run: sudo KEYRING=/tmp/keyring/usr/share/keyrings/debian-archive-keyring.gpg scripts/build-lxc-template.sh --branch "${{ github.ref_name }}" --output dist
+
+      - name: Publish release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(cat VERSION)
+          if [[ "${{ github.ref_name }}" == main ]]; then
+            tag="v$version"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              gh release upload "$tag" dist/*.tar.zst dist/*.sha256 --clobber
+            else
+              gh release create "$tag" dist/*.tar.zst dist/*.sha256 --target "$GITHUB_SHA" --latest \
+                --title "Version $version" \
+                --notes "Proxmox LXC template (Debian 13) for version $version. In Proxmox: storage > CT Templates > Download from URL, paste the address of the .tar.zst file below. See the README."
+            fi
+          elif [[ "${{ github.ref_name }}" == test ]]; then
+            gh release delete template-test --cleanup-tag --yes >/dev/null 2>&1 || true
+            gh release create template-test dist/*.tar.zst dist/*.sha256 --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "Test channel template ($version)" \
+              --notes "Proxmox LXC template of the test channel, rebuilt on every change to the test branch. Not for production."
+          fi

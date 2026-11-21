@@ -15,6 +15,9 @@ cd "$APP_DIR/frontend"
 npm ci --no-audit --no-fund --loglevel=error
 npm run build
 
+# The LXC template is built without a database: its first start runs the migrations.
+if [[ "${LPR_SKIP_MIGRATIONS:-}" == 1 ]]; then exit 0; fi
+
 echo "==> Database migrations"
 # Read KEY=value lines literally (same format as systemd EnvironmentFile, no shell expansion).
 while IFS= read -r line || [[ -n "$line" ]]; do

@@ -63,6 +63,10 @@ def main(argv: list[str] | None = None) -> int:
         password = _password()
         db.add(User(username=args.username, display_name="Administrator", role="admin", password_hash=hash_password(password)))
         db.commit()
+        from .settings_store import update_section
+
+        # The first sign-in opens the setup wizard (web address, HTTPS, channel, restore).
+        update_section(db, "setup", {"pending": True})
         print(f"Admin account created.\n  username: {args.username}\n  password: {password}")
         return 0
 

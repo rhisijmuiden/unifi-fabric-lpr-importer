@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Updates the application or switches between the production (main) and test branch.
 # Started as root by lpr-importer-update.service; the web app writes the request file.
+# The same unit applies web address / HTTPS changes: those come as config-request.json (scripts/configure.sh).
 set -uo pipefail
 
 APP_DIR=/opt/lpr-importer
@@ -27,6 +28,10 @@ if state == "running" and message == "Starting":
 json.dump(data, open(path, "w"))
 PY
 }
+
+if [[ -f "$STATE_DIR/config-request.json" ]]; then
+  exec "$APP_DIR/scripts/configure.sh" --request
+fi
 
 exec >>"$LOG" 2>&1
 echo
